@@ -1,0 +1,147 @@
+"""
+build_closing_slide_html.py — generates the single closing slide as a .html.
+
+Mirrors the design of build_closing_slide.py:
+  - White background
+  - Thin red bar at top
+  - Headline: "Every day you wait, you pay for it."
+  - Three metric rows: value left, label right
+  - Command block at bottom
+"""
+
+HTML = """\
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Closing Slide</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .slide {
+    width: 960px;
+    height: 540px;
+    background: #ffffff;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .red-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: #DC2626;
+  }
+
+  .content {
+    position: absolute;
+    top: 24px; left: 58px; right: 58px; bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .headline {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 8px;
+    line-height: 1.2;
+  }
+
+  .divider {
+    height: 1px;
+    background: #E5E7EB;
+    margin: 18px 0;
+  }
+
+  .metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .metric-row {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+  }
+
+  .metric-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #111827;
+    min-width: 140px;
+    flex-shrink: 0;
+  }
+
+  .metric-label {
+    font-size: 17px;
+    color: #6B7280;
+    line-height: 1.3;
+  }
+
+  .cmd-block {
+    margin-top: auto;
+    background: #F8FAFC;
+    border: 1px solid #E5E7EB;
+    border-radius: 4px;
+    padding: 14px 22px;
+  }
+
+  .cmd-text {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 19px;
+    font-weight: 700;
+    color: #1E293B;
+  }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="red-bar"></div>
+  <div class="content">
+    <div class="headline">Every day you wait, you pay for it.</div>
+    <div class="divider"></div>
+    <div class="metrics">
+      <div class="metric-row">
+        <div class="metric-value">$[X]</div>
+        <div class="metric-label">what one presentation costs your organization today</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-value">60 sec</div>
+        <div class="metric-label">what it costs with this tool</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-value">[X] days</div>
+        <div class="metric-label">until it pays for itself completely</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="cmd-block">
+      <span class="cmd-text">python generate.py &quot;Your next meeting&quot;</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+"""
+
+def build():
+    out = "Closing_Slide.html"
+    with open(out, "w", encoding="utf-8") as f:
+        f.write(HTML)
+    print(f"Saved: {out}")
+
+if __name__ == "__main__":
+    build()
