@@ -67,10 +67,10 @@ QA = [
     ),
     (
         "\"Could a competitor clone this in a weekend?\"",
-        "Yes. And so could you. The tool is open source. That's the point.\n\n"
-        "The moat isn't the code — it's workflow integration and the customization layer your team builds.\n\n"
-        "Every enterprise tool gets cloned. The ones that survive become infrastructure.\n\n"
-        "That's the design goal."
+        "Let me separate two questions asked as one.\n\n"
+        "Can someone clone the code? Yes, in a weekend. That's happened. We know.\n\n"
+        "Can someone clone the outcome? No. The slide schema, prompt architecture, speaker note logic — those took iteration. You can copy the output. You can't copy the iteration.\n\n"
+        "The real moat is workflow. The moment a team's first draft is always a generated draft, switching cost compounds. Google Slides is 15 years old. PowerPoint is 40. Neither generates the first draft. That's the gap."
     ),
     (
         "\"Why would I trust AI to represent my thinking in a boardroom?\"",
@@ -88,10 +88,10 @@ QA = [
     ),
     (
         "\"Why is this open source? What's the business model?\"",
-        "The business model is distribution.\n\n"
-        "Open source means adoption happens faster than any sales motion could drive it.\n\n"
-        "Your developers extend it without asking permission. Your network finds it without a pitch.\n\n"
-        "The value accrues to you, not a subscription."
+        "Three honest answers, depending on who's asking.\n\n"
+        "Developer evaluating whether to build on this: free and open source. Cost of a presentation is three cents in API calls.\n\n"
+        "Company evaluating adoption at scale: roughly $500–$1,000/year for a team of 50. No license fee. No per-seat pricing.\n\n"
+        "If you're asking whether this becomes a business: yes. Open-source core stays free. Revenue comes from the layer above — hosted version, team management, brand theme marketplace, enterprise SSO. The pattern is Hashicorp, Grafana, GitLab. Give the engine away. Sell the dashboard."
     ),
 ]
 
