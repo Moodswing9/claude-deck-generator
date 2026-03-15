@@ -65,7 +65,7 @@ The repo ships a full boardroom playbook for pitching the tool itself:
 
 | File | What it is |
 |------|------------|
-| `AI_Presentation_Generator_Pitch.pptx` / `.html` | 10-slide pitch deck, corporate theme |
+| `AI_Presentation_Generator_Pitch.pptx` / `.html` | 11-slide pitch deck, corporate theme |
 | `Closing_Slide.pptx` | Single closing slide — white bg, three numbers, one command |
 | `QA_Prep_Slides.pptx` | 12-slide Q&A deck — 10 hardest questions, bridging phrases, golden rule |
 | `Objection_Handling_Slides.pptx` / `.html` | 6 objections preemptively neutralized |
