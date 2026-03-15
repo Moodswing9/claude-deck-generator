@@ -1,60 +1,82 @@
 """
-generate.py - Presentation generator with color theme support.
+generate.py - AI-powered presentation generator.
+
+Uses Claude to generate slide content from a topic, then outputs a styled
+.pptx or .html file with your choice of color theme.
 
 Usage:
-    python generate.py [--theme THEME] [--output OUTPUT] [--title TITLE]
+    python generate.py "Your Topic" [--theme THEME] [--format FORMAT] [--output FILE]
 
-Themes:
-    dark        Dark background with light text (default)
-    light       Light background with dark text
-    corporate   Professional blue/grey corporate style
+Themes:  dark (default), light, corporate
+Formats: pptx (default), html
 """
 
 import argparse
 import json
 import os
+import sys
 from datetime import datetime
 
+import anthropic
+from pptx import Presentation
+from pptx.dml.color import RGBColor
+from pptx.enum.text import PP_ALIGN
+from pptx.util import Inches, Pt
+
 # ---------------------------------------------------------------------------
-# Theme definitions
+# Themes
 # ---------------------------------------------------------------------------
 
 THEMES = {
     "dark": {
         "name": "Dark",
+        # pptx colors
+        "bg": RGBColor(0x1A, 0x1A, 0x2E),
+        "accent": RGBColor(0xE9, 0x45, 0x60),
+        "text": RGBColor(0xFF, 0xFF, 0xFF),
+        "subtext": RGBColor(0xA0, 0xA0, 0xB0),
+        "divider": RGBColor(0x0F, 0x34, 0x60),
+        # html colors
         "background": "#1a1a2e",
         "slide_bg": "#16213e",
         "primary": "#e94560",
         "secondary": "#0f3460",
-        "text": "#eaeaea",
+        "html_text": "#eaeaea",
         "muted": "#a0a0b0",
-        "accent": "#533483",
         "border": "#0f3460",
         "code_bg": "#0d0d1a",
         "font_family": "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     },
     "light": {
         "name": "Light",
+        "bg": RGBColor(0xF5, 0xF5, 0xF5),
+        "accent": RGBColor(0x25, 0x63, 0xEB),
+        "text": RGBColor(0x11, 0x18, 0x27),
+        "subtext": RGBColor(0x6B, 0x72, 0x80),
+        "divider": RGBColor(0xD1, 0xD5, 0xDB),
         "background": "#f5f5f5",
         "slide_bg": "#ffffff",
         "primary": "#2563eb",
         "secondary": "#e5e7eb",
-        "text": "#111827",
+        "html_text": "#111827",
         "muted": "#6b7280",
-        "accent": "#7c3aed",
         "border": "#d1d5db",
         "code_bg": "#f3f4f6",
         "font_family": "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     },
     "corporate": {
         "name": "Corporate",
+        "bg": RGBColor(0x1E, 0x29, 0x3B),
+        "accent": RGBColor(0x0E, 0xA5, 0xE9),
+        "text": RGBColor(0xF1, 0xF5, 0xF9),
+        "subtext": RGBColor(0x94, 0xA3, 0xB8),
+        "divider": RGBColor(0x33, 0x41, 0x55),
         "background": "#1e293b",
         "slide_bg": "#0f172a",
         "primary": "#0ea5e9",
         "secondary": "#1e40af",
-        "text": "#f1f5f9",
+        "html_text": "#f1f5f9",
         "muted": "#94a3b8",
-        "accent": "#06b6d4",
         "border": "#334155",
         "code_bg": "#0a0f1e",
         "font_family": "'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
@@ -64,62 +86,145 @@ THEMES = {
 DEFAULT_THEME = "dark"
 
 # ---------------------------------------------------------------------------
-# Sample slide content
+# Claude API — generate slide content
 # ---------------------------------------------------------------------------
 
-DEFAULT_SLIDES = [
-    {
-        "type": "title",
-        "title": "Welcome to the Presentation",
-        "subtitle": "Generated with theme support",
+SLIDE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "title": {"type": "string"},
+        "slides": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "bullets": {"type": "array", "items": {"type": "string"}},
+                    "notes": {"type": "string"},
+                },
+                "required": ["title", "bullets", "notes"],
+                "additionalProperties": False,
+            },
+        },
     },
-    {
-        "type": "content",
-        "title": "Key Features",
-        "bullets": [
-            "Multiple color themes: dark, light, corporate",
-            "Clean, responsive HTML output",
-            "Easy to extend with new slides",
-            "Command-line interface for quick generation",
-        ],
-    },
-    {
-        "type": "content",
-        "title": "How It Works",
-        "bullets": [
-            "Define slides as Python dicts or load from JSON",
-            "Pick a theme (dark, light, or corporate)",
-            "Run generate.py to produce a self-contained HTML file",
-            "Open the HTML file in any modern browser",
-        ],
-    },
-    {
-        "type": "code",
-        "title": "Example Usage",
-        "language": "bash",
-        "code": (
-            "# Generate with the default (dark) theme\n"
-            "python generate.py\n\n"
-            "# Generate with the light theme\n"
-            "python generate.py --theme light\n\n"
-            "# Generate with the corporate theme\n"
-            "python generate.py --theme corporate --output my_deck.html"
+    "required": ["title", "slides"],
+    "additionalProperties": False,
+}
+
+
+def generate_content(topic: str) -> dict:
+    client = anthropic.Anthropic()
+    print(f"Generating content for: {topic}")
+    response = client.messages.create(
+        model="claude-opus-4-6",
+        max_tokens=4096,
+        thinking={"type": "adaptive"},
+        system=(
+            "You are an expert presentation designer. Generate professional, "
+            "insightful slide content. Each slide should have a clear title and "
+            "3-5 punchy bullet points. Include helpful speaker notes."
         ),
-    },
-    {
-        "type": "closing",
-        "title": "Thank You",
-        "subtitle": "Questions?",
-    },
-]
+        messages=[{
+            "role": "user",
+            "content": (
+                f"Create a professional 8-10 slide presentation about: {topic}\n\n"
+                "Include: title slide, agenda, key sections, and a conclusion slide."
+            ),
+        }],
+        output_config={
+            "format": {"type": "json_schema", "schema": SLIDE_SCHEMA}
+        },
+    )
+    text = next(b.text for b in response.content if b.type == "text")
+    return json.loads(text)
+
 
 # ---------------------------------------------------------------------------
-# HTML generation helpers
+# PPTX builder
 # ---------------------------------------------------------------------------
 
+def _pptx_set_bg(slide, color):
+    fill = slide.background.fill
+    fill.solid()
+    fill.fore_color.rgb = color
+
+
+def _pptx_textbox(slide, text, left, top, width, height,
+                  size=18, bold=False, color=None, align=PP_ALIGN.LEFT, wrap=True):
+    tb = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(width), Inches(height))
+    tf = tb.text_frame
+    tf.word_wrap = wrap
+    p = tf.paragraphs[0]
+    p.alignment = align
+    run = p.add_run()
+    run.text = text
+    run.font.size = Pt(size)
+    run.font.bold = bold
+    run.font.name = "Calibri"
+    run.font.color.rgb = color
+    return tb
+
+
+def _pptx_title_slide(prs, title, theme):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _pptx_set_bg(slide, theme["bg"])
+    stripe = slide.shapes.add_shape(1, 0, Inches(3.2), Inches(10), Inches(1.2))
+    stripe.fill.solid()
+    stripe.fill.fore_color.rgb = theme["accent"]
+    stripe.line.fill.background()
+    _pptx_textbox(slide, title, 0.5, 1.6, 9, 1.5, size=40, bold=True,
+                  color=theme["text"], align=PP_ALIGN.LEFT)
+    _pptx_textbox(slide, "AI-Generated Presentation", 0.5, 3.3, 9, 0.5,
+                  size=18, color=theme["subtext"], align=PP_ALIGN.LEFT)
+
+
+def _pptx_content_slide(prs, title, bullets, notes, theme):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _pptx_set_bg(slide, theme["bg"])
+
+    bar = slide.shapes.add_shape(1, Inches(0.5), Inches(1.1), Inches(0.08), Inches(0.6))
+    bar.fill.solid()
+    bar.fill.fore_color.rgb = theme["accent"]
+    bar.line.fill.background()
+
+    _pptx_textbox(slide, title, 0.7, 0.35, 8.8, 0.9, size=26, bold=True, color=theme["text"])
+
+    div = slide.shapes.add_shape(1, Inches(0.5), Inches(1.15), Inches(9), Inches(0.03))
+    div.fill.solid()
+    div.fill.fore_color.rgb = theme["divider"]
+    div.line.fill.background()
+
+    tb = slide.shapes.add_textbox(Inches(0.7), Inches(1.45), Inches(8.8), Inches(4.8))
+    tf = tb.text_frame
+    tf.word_wrap = True
+    for i, bullet in enumerate(bullets):
+        p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+        p.space_before = Pt(6)
+        run = p.add_run()
+        run.text = f"▸  {bullet}"
+        run.font.size = Pt(18)
+        run.font.name = "Calibri"
+        run.font.color.rgb = theme["text"]
+
+    if notes:
+        slide.notes_slide.notes_text_frame.text = notes
+
+
+def build_pptx(data: dict, theme: dict, output_path: str):
+    prs = Presentation()
+    prs.slide_width = Inches(10)
+    prs.slide_height = Inches(5.625)
+    _pptx_title_slide(prs, data["title"], theme)
+    for s in data["slides"]:
+        _pptx_content_slide(prs, s["title"], s["bullets"], s.get("notes", ""), theme)
+    prs.save(output_path)
+
+
+# ---------------------------------------------------------------------------
+# HTML builder
+# ---------------------------------------------------------------------------
 
 def _css(theme: dict) -> str:
-    """Return the CSS block for the given theme."""
     t = theme
     return f"""
         :root {{
@@ -127,307 +232,137 @@ def _css(theme: dict) -> str:
             --slide-bg: {t['slide_bg']};
             --primary: {t['primary']};
             --secondary: {t['secondary']};
-            --text: {t['text']};
+            --text: {t['html_text']};
             --muted: {t['muted']};
-            --accent: {t['accent']};
             --border: {t['border']};
             --code-bg: {t['code_bg']};
         }}
-
         * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-
         body {{
-            background: var(--bg);
-            color: var(--text);
+            background: var(--bg); color: var(--text);
             font-family: {t['font_family']};
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 1rem;
+            min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; padding: 2rem 1rem;
         }}
-
-        h1, h2, h3 {{
-            color: var(--primary);
-        }}
-
+        h1, h2 {{ color: var(--primary); }}
         .deck-title {{
-            text-align: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--border);
-            width: 100%;
-            max-width: 860px;
+            text-align: center; margin-bottom: 2rem; padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border); width: 100%; max-width: 860px;
         }}
-
-        .deck-title h1 {{
-            font-size: 2rem;
-        }}
-
-        .deck-title .meta {{
-            color: var(--muted);
-            font-size: 0.85rem;
-            margin-top: 0.4rem;
-        }}
-
-        .slide {{
-            background: var(--slide-bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            width: 100%;
-            max-width: 860px;
-            min-height: 320px;
-            margin-bottom: 1.5rem;
-            padding: 2.5rem 3rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-        }}
-
-        .slide-number {{
-            position: absolute;
-            top: 1rem;
-            right: 1.5rem;
-            font-size: 0.75rem;
-            color: var(--muted);
-        }}
-
-        .slide-type-title {{
-            text-align: center;
-        }}
-
-        .slide-type-title h2 {{
-            font-size: 2.2rem;
-            margin-bottom: 0.75rem;
-        }}
-
-        .slide-type-title .subtitle {{
-            color: var(--muted);
-            font-size: 1.2rem;
-        }}
-
-        .slide-type-closing {{
-            text-align: center;
-            border-top: 4px solid var(--primary);
-        }}
-
-        .slide-type-closing h2 {{
-            font-size: 2.5rem;
-            margin-bottom: 0.75rem;
-        }}
-
-        .slide h2 {{
-            font-size: 1.6rem;
-            margin-bottom: 1.2rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--border);
-        }}
-
-        ul {{
-            list-style: none;
-            padding: 0;
-        }}
-
-        ul li {{
-            padding: 0.45rem 0 0.45rem 1.6rem;
-            position: relative;
-            color: var(--text);
-            font-size: 1.05rem;
-            line-height: 1.6;
-        }}
-
-        ul li::before {{
-            content: '▸';
-            position: absolute;
-            left: 0;
-            color: var(--primary);
-        }}
-
-        pre {{
-            background: var(--code-bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 1.2rem 1.5rem;
-            overflow-x: auto;
-            font-size: 0.9rem;
-            line-height: 1.7;
-            color: var(--accent);
-            margin-top: 0.5rem;
-        }}
-
+        .deck-title h1 {{ font-size: 2rem; }}
+        .deck-title .meta {{ color: var(--muted); font-size: 0.85rem; margin-top: 0.4rem; }}
         .theme-badge {{
-            display: inline-block;
-            background: var(--secondary);
-            color: var(--primary);
-            border-radius: 20px;
-            padding: 0.2rem 0.9rem;
-            font-size: 0.78rem;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            margin-top: 0.5rem;
+            display: inline-block; background: var(--secondary); color: var(--primary);
+            border-radius: 20px; padding: 0.2rem 0.9rem; font-size: 0.78rem;
+            font-weight: 600; letter-spacing: 0.05em; margin-top: 0.5rem;
         }}
+        .slide {{
+            background: var(--slide-bg); border: 1px solid var(--border);
+            border-radius: 10px; width: 100%; max-width: 860px; min-height: 280px;
+            margin-bottom: 1.5rem; padding: 2.5rem 3rem;
+            display: flex; flex-direction: column; justify-content: center;
+            position: relative; box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }}
+        .slide-number {{ position: absolute; top: 1rem; right: 1.5rem; font-size: 0.75rem; color: var(--muted); }}
+        .slide-type-title {{ text-align: center; }}
+        .slide-type-title h2 {{ font-size: 2.2rem; margin-bottom: 0.75rem; }}
+        .slide-type-title .subtitle {{ color: var(--muted); font-size: 1.2rem; }}
+        .slide-type-closing {{ text-align: center; border-top: 4px solid var(--primary); }}
+        .slide-type-closing h2 {{ font-size: 2.5rem; margin-bottom: 0.75rem; }}
+        .slide h2 {{
+            font-size: 1.6rem; margin-bottom: 1.2rem;
+            padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+        }}
+        ul {{ list-style: none; padding: 0; }}
+        ul li {{
+            padding: 0.45rem 0 0.45rem 1.6rem; position: relative;
+            font-size: 1.05rem; line-height: 1.6;
+        }}
+        ul li::before {{ content: '▸'; position: absolute; left: 0; color: var(--primary); }}
     """
 
 
 def _slide_html(slide: dict, index: int, total: int) -> str:
-    """Render a single slide to HTML."""
-    slide_type = slide.get("type", "content")
     title = slide.get("title", "")
-    num_label = f'<span class="slide-number">{index}/{total}</span>'
-
-    if slide_type == "title":
-        subtitle = slide.get("subtitle", "")
-        return f"""
-        <section class="slide slide-type-title">
-            {num_label}
-            <h2>{title}</h2>
-            <p class="subtitle">{subtitle}</p>
-        </section>"""
-
-    if slide_type == "closing":
-        subtitle = slide.get("subtitle", "")
-        return f"""
-        <section class="slide slide-type-closing">
-            {num_label}
-            <h2>{title}</h2>
-            <p class="subtitle" style="color: var(--muted); font-size: 1.1rem;">{subtitle}</p>
-        </section>"""
-
-    if slide_type == "code":
-        code = slide.get("code", "")
-        # Basic HTML escaping
-        code = code.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-        return f"""
-        <section class="slide">
-            {num_label}
-            <h2>{title}</h2>
-            <pre>{code}</pre>
-        </section>"""
-
-    # Default: content slide with bullets
     bullets = slide.get("bullets", [])
+    num = f'<span class="slide-number">{index}/{total}</span>'
     items = "".join(f"<li>{b}</li>" for b in bullets)
-    body = slide.get("body", "")
-    body_html = f"<p style='margin-top:1rem; line-height:1.7;'>{body}</p>" if body else ""
-    return f"""
-    <section class="slide">
-        {num_label}
-        <h2>{title}</h2>
-        <ul>{items}</ul>
-        {body_html}
-    </section>"""
+    if index == 1:
+        return f'<section class="slide slide-type-title">{num}<h2>{title}</h2></section>'
+    if index == total:
+        return f'<section class="slide slide-type-closing">{num}<h2>{title}</h2></section>'
+    return f'<section class="slide">{num}<h2>{title}</h2><ul>{items}</ul></section>'
 
 
-def generate_html(
-    slides: list,
-    theme_key: str,
-    title: str = "Presentation",
-) -> str:
-    """Generate a complete HTML presentation document."""
-    if theme_key not in THEMES:
-        raise ValueError(
-            f"Unknown theme '{theme_key}'. Available themes: {', '.join(THEMES)}"
-        )
-
-    theme = THEMES[theme_key]
+def build_html(data: dict, theme: dict, output_path: str):
+    slides = [{"title": data["title"], "bullets": []}] + data["slides"]
     total = len(slides)
-    slides_html = "".join(
-        _slide_html(slide, i + 1, total) for i, slide in enumerate(slides)
-    )
-    css = _css(theme)
+    slides_html = "".join(_slide_html(s, i + 1, total) for i, s in enumerate(slides))
     generated_at = datetime.now().strftime("%Y-%m-%d %H:%M")
-
-    return f"""<!DOCTYPE html>
+    html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
-    <style>{css}</style>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{data['title']}</title>
+    <style>{_css(theme)}</style>
 </head>
 <body>
     <div class="deck-title">
-        <h1>{title}</h1>
-        <div class="meta">
-            Generated on {generated_at}
-            &nbsp;&bull;&nbsp;
+        <h1>{data['title']}</h1>
+        <div class="meta">Generated on {generated_at} &bull;
             <span class="theme-badge">{theme['name']} theme</span>
         </div>
     </div>
     {slides_html}
 </body>
-</html>
-"""
+</html>"""
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html)
 
 
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
-
-def parse_args() -> argparse.Namespace:
+def main():
     parser = argparse.ArgumentParser(
-        description="Generate an HTML presentation with a chosen color theme."
+        description="Generate a presentation from a topic using Claude AI."
     )
-    parser.add_argument(
-        "--theme",
-        choices=list(THEMES.keys()),
-        default=DEFAULT_THEME,
-        help=f"Color theme to use (default: {DEFAULT_THEME})",
-    )
-    parser.add_argument(
-        "--output",
-        default="presentation.html",
-        help="Output HTML file path (default: presentation.html)",
-    )
-    parser.add_argument(
-        "--title",
-        default="Presentation",
-        help="Presentation title (default: 'Presentation')",
-    )
-    parser.add_argument(
-        "--slides",
-        default=None,
-        help="Path to a JSON file containing slide data (optional)",
-    )
-    parser.add_argument(
-        "--list-themes",
-        action="store_true",
-        help="List available themes and exit",
-    )
-    return parser.parse_args()
-
-
-def load_slides(path: str) -> list:
-    """Load slide data from a JSON file."""
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    if not isinstance(data, list):
-        raise ValueError("Slides JSON must be a list of slide objects.")
-    return data
-
-
-def main() -> None:
-    args = parse_args()
+    parser.add_argument("topic", nargs="?", help="Presentation topic")
+    parser.add_argument("--theme", choices=list(THEMES.keys()), default=DEFAULT_THEME,
+                        help=f"Color theme (default: {DEFAULT_THEME})")
+    parser.add_argument("--format", choices=["pptx", "html"], default="pptx",
+                        help="Output format (default: pptx)")
+    parser.add_argument("--output", default=None,
+                        help="Output file path (default: auto-named from topic)")
+    parser.add_argument("--list-themes", action="store_true",
+                        help="List available themes and exit")
+    args = parser.parse_args()
 
     if args.list_themes:
-        print("Available themes:")
-        for key, theme in THEMES.items():
+        for key, t in THEMES.items():
             marker = " (default)" if key == DEFAULT_THEME else ""
-            print(f"  {key:<12} {theme['name']}{marker}")
+            print(f"  {key:<12} {t['name']}{marker}")
         return
 
-    slides = load_slides(args.slides) if args.slides else DEFAULT_SLIDES
+    topic = args.topic or input("Enter presentation topic: ").strip()
+    if not topic:
+        print("Error: topic required")
+        sys.exit(1)
 
-    html = generate_html(slides, theme_key=args.theme, title=args.title)
+    theme = THEMES[args.theme]
+    data = generate_content(topic)
 
-    output_path = args.output
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(html)
+    safe = "".join(c if c.isalnum() or c in " _-" else "_" for c in topic)[:40].strip()
+    output = args.output or f"{safe}.{args.format}"
 
-    print(f"Presentation generated: {output_path}  (theme: {args.theme})")
+    if args.format == "pptx":
+        build_pptx(data, theme, output)
+    else:
+        build_html(data, theme, output)
+
+    print(f"Saved: {output}  ({len(data['slides'])} slides, {args.theme} theme)")
 
 
 if __name__ == "__main__":
