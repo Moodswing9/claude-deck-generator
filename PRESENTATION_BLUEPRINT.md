@@ -59,14 +59,18 @@ Everything in the deck exists to prove that sentence or make the audience feel i
 ---
 
 ### SLIDE 2 — THE REAL COST
-**Title:** "That's not a time problem. That's a focus problem."
+**Title:** "You know the number. You just haven't said it out loud."
 
 **Content:**
-- The average executive spends 26 hours/month on presentations
-- 68% of that time is formatting, not thinking
-- Every hour in PowerPoint is an hour not spent on the decision you're building the deck for
+Ask the room: how long did your last important presentation take to build?
+Three hours? Four? Six, if it was a board deck?
 
-*Why it earns its place:* Reframes the problem from a productivity nuisance to a strategic liability. Creates shared language ("focus problem") that persists through the rest of the talk.
+Now multiply that by every person in this building who builds decks.
+Multiply by 52 weeks.
+
+That number doesn't appear on your P&L. It should.
+
+*Why it earns its place:* The audience generates the stat themselves. Their number is more powerful than any published figure — and it's immune to fact-checking because it's theirs. The CFO in the room just did the math on their own company. That's the moment you want. No unsourced statistics. No claims to defend. Just a calculation they ran themselves.
 
 ---
 
@@ -98,7 +102,9 @@ Everything in the deck exists to prove that sentence or make the audience feel i
 
 **No narration during generation. None.**
 
-*Why it earns its place:* The silence does the selling. Narrating over the demo is the single biggest mistake presenters make — it fills the space where awe would live. The audience watches Claude think. That's the product.
+**Contingency — always have it ready:** Before the presentation, pre-generate two outputs on different topics and keep them open in separate windows. If the API is slow, down, or the output is weak, pivot without hesitation: "I ran this earlier — here's what it produced." Then show the pre-generated deck. The demo still lands. The silence rule still applies. Never acknowledge the fallback.
+
+*Why it earns its place:* The silence does the selling. Narrating over the demo is the single biggest mistake presenters make — it fills the space where awe would live. The audience watches Claude think. That's the product. The contingency exists so the risk never materializes in the room.
 
 ---
 
@@ -120,11 +126,13 @@ Everything in the deck exists to prove that sentence or make the audience feel i
 
 **Content:**
 - Claude Opus 4.6 with adaptive thinking — the same model used in enterprise deployments
-- Structured JSON schema output — deterministic, parseable, version-controllable
+- Structured JSON schema output — typed, parseable, version-controllable. Same schema every run.
 - python-pptx rendering — native Office format, no conversion artifacts
 - Three themes (dark, light, corporate) — designed for real environments, not demos
 
 *Why it earns its place:* Credibility slide. Founders trust tools that show their seams. Developers respect the choice of primitives. This is where skeptics become believers.
+
+*Note on language:* Do NOT say "deterministic" — LLM output varies per run. Say "structured" or "schema-constrained." The JSON schema enforces shape; the content varies intentionally. A technical person will catch "deterministic" and it will cost you the slide.
 
 ---
 
@@ -148,10 +156,10 @@ Everything in the deck exists to prove that sentence or make the audience feel i
 **Title:** "The tool you build on, not around."
 
 **Content:**
-- Add a theme in 10 lines of Python
-- Point `--slides` at any JSON file — your data, your structure
-- Pipe it into a GitHub Action and generate decks on every commit
-- Wrap it in a web form and give your whole team access
+- Add a theme in 10 lines of Python — your brand, your colors, available via `--theme`
+- Point `--slides` at any JSON file — your data, your structure, the tool handles layout and notes
+- Wrap it in a web form: one field, one button, your whole team has access
+- Schedule it: weekly status deck generated and emailed every Monday, zero human intervention
 
 *Why it earns its place:* Transforms the audience from users to builders. This is where technical decision-makers start doing the math on what they'd build with it. Creates desire before the ask.
 
@@ -216,7 +224,8 @@ python generate.py "Your next meeting"
 ## 8. METRICS FOR SUCCESS
 
 - At least one person runs the tool during or immediately after the presentation
-- Zero questions about "how does it work technically" — those were answered in slide 7
+- The Q&A is about use cases and extension, not about whether it works — credibility was established in slide 7
 - The phrase "type a topic, get a presentation" is repeated back to you unprompted
+- Someone asks "can it do X?" — that question means they've already accepted the premise and are buying in
 
-If those three things happen, the deck worked.
+If those things happen, the deck worked. Silence is not success. Engagement is.

@@ -12,18 +12,17 @@
 |---------|---------|
 | **Problem** | Executives spend 26 hours/month on presentations. 68% is formatting, not thinking. The cost never appears on a P&L. It should. |
 | **Solution** | One command. Claude Opus 4.6 generates structure, argument, and speaker notes. 60 seconds. Native .pptx or .html. |
-| **Proof** | Live. Deterministic. Open source. Running in production. |
+| **Proof** | Live. Schema-constrained output. Open source. Run it in this room. |
 | **Ask** | Three commands. Judge the output yourself. |
 
 ---
 
 **The 60-word body — every word justified:**
 
-> Your highest-paid people spend 26 hours a month on slides.
-> 68% of that time is formatting — not thinking.
-> One command fixes it. Claude generates the structure, the argument, and the speaker notes in 60 seconds.
+> Your highest-paid people are building slides.
+> Ask anyone in this room how long their last deck took. Then multiply by your headcount and 52 weeks.
+> One command changes that number. Claude generates the structure, the argument, and the speaker notes in 60 seconds.
 > Native PowerPoint. Three themes. Open source.
-> We ran it live. You watched it work.
 > Three commands to install. Run it before you leave this room.
 
 **Word count: 60. Not 61.**

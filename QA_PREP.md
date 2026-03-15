@@ -66,7 +66,7 @@ That analyst still needs your feedback, your edits, your judgment. So does this.
 
 What the tool produces is a structured argument, not a polished final deck. It handles the 80% — structure, flow, speaker notes, formatting — so you spend your time on the 20% that actually requires you.
 
-The clients who've seen the output don't know it was generated. The ones who've asked 'who wrote this?' — that's the ceiling."
+The better question is: how long does it take you to get from zero to something worth editing? Right now, hours. With this, sixty seconds. That's the ceiling that matters."
 
 ---
 
@@ -104,15 +104,23 @@ Compare that to what you're currently spending on that same output in senior lab
 
 ### Q7. "Could a competitor clone this in a weekend?"
 
-**Why they ask it:** They're thinking about defensibility. They're a founder or investor.
+**Why they ask it:** They're not asking about competitors. They're asking: "Should I bet on you, or wait for Google to do this in Slides?" Answer that question.
 
 **The answer:**
 
-"Yes. And so could you.
+"Let me separate two questions that got asked as one.
 
-The tool is open source. That's the point. The moat isn't the code — it's the workflow integration, the institutional knowledge baked into how your team uses it, and the customization layer your developers build on top.
+Can someone clone the code? Yes, in a weekend. That's happened already — it's on GitHub. We know.
 
-Every enterprise tool gets cloned. The ones that survive are the ones that become infrastructure. That's the design goal here: not a tool you use, but a system you build on."
+Can someone clone the outcome? No. And here's why that distinction matters.
+
+The code generates slides. What's actually valuable isn't the code — it's every decision baked into how content becomes a structured argument. The slide schema. The prompt architecture. The theme system. The speaker note logic. Those took iteration. You can copy the output of that iteration in a weekend. You can't copy the iteration itself.
+
+But the real answer: the moat isn't technical. It's workflow. The moment a team's first draft is always a generated draft — the moment 'run generate.py' is how a company starts every deck — switching cost compounds. Not because we locked them in. Because their entire working pattern is built around a tool that already solved it.
+
+Google Slides is fifteen years old. PowerPoint is forty. Neither of them generates the first draft. That's the gap.
+
+The question isn't whether someone could clone this. The question is whether they'll move fast enough to matter. So far: no."
 
 ---
 
@@ -148,15 +156,22 @@ You're not locked into Anthropic. You're locked into a function signature. That'
 
 ### Q10. "Why is this open source? What's the business model?"
 
-**Why they ask it:** They're suspicious of free things. They're looking for the catch.
+**Why they ask it:** They're not suspicious of free things. They're identifying whether this is a serious project or a weekend experiment. The business model question is really: "Are you a builder or are you building a company?"
 
 **The answer:**
 
-"The business model is the same as every other developer tool that went open source: distribution.
+"There are three honest answers, depending on who's asking.
 
-Open source means you find it, fork it, build on it, and tell your network. It means your developers extend it without asking permission. It means adoption happens faster than any sales motion could drive it.
+If you're a developer evaluating whether to build on this: the tool is free and open source. You fork it, extend it, and the cost of a presentation is three cents in API calls. That's the answer for you.
 
-The value isn't in the code. It's in the presentations your team stops spending four hours on. That value accrues to you, not to a subscription."
+If you're a company evaluating adoption at scale: the cost is the Anthropic API — roughly $500 to $1,000 a year for a team of 50. No license fee. No per-seat pricing. The tool is infrastructure, not a subscription.
+
+If you're asking whether I'm trying to build a business: yes. The open-source core stays free. Revenue comes from the layer above it — hosted version, team management, brand theme marketplace, enterprise SSO. The pattern is Hashicorp, Grafana, GitLab. Give the engine away. Sell the dashboard.
+
+The tool in this room is the engine. We haven't built the dashboard yet. That's the honest answer."
+
+*[If they push: "What's the timeline?"]*
+"The engine works. The dashboard gets built when the engine has enough users to know what they actually need. That's the right order."
 
 ---
 

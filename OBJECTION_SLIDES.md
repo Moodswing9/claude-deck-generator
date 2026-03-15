@@ -53,13 +53,14 @@ The API call is auditable, deterministic, and contains exactly what you type as 
 - Canva makes formatting faster — the content problem remains untouched
 - Google Slides is a canvas — this is a co-writer
 
-**The one number:**
-> "68% of presentation time is spent on formatting, not thinking.
-> Canva addresses the 68%. This tool addresses the 100%."
+**The distinction:**
+> "Canva addresses the tool. This addresses the task.
+> The task is: what do I say, in what order, and why does it matter?
+> Canva never touches that. Neither does Slides. Neither does PowerPoint.
+> This does."
 
 **Speaker note:**
-Let them argue. Then ask: "How long did your last deck take, start to finish?"
-Wait for the answer. Then say: "This does that in 60 seconds. Want to watch again?"
+Don't cite a formatting percentage stat — it's unverifiable and a skeptic will challenge it. Instead: ask them. "How long did your last deck take, start to finish?" Wait for the answer. Then say: "This does that in 60 seconds. Want to watch again?" Their own number is more powerful than any statistic.
 
 ---
 
@@ -91,7 +92,7 @@ Point `--slides` at any JSON file from any source. Swap the model in one line of
 **Bullets:**
 - Use `--slides` to feed your own JSON — your data, your structure, your domain expertise
 - The tool generates the frame; your team fills the substance
-- Claude has read every business framework, case study, and industry report published — it's not starting from zero
+- Claude was trained on a broad corpus of business writing, frameworks, and case studies — it starts with context, not a blank page
 
 **The reframe:**
 > "You don't ask a consultant to know your business on day one.
