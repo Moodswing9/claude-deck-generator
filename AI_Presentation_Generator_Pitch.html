@@ -1,71 +1,239 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>AI Presentation Generator — From Topic to Boardroom Deck in 60 Seconds</title>
-    <style>
-        :root {
-            --bg: #1e293b;
-            --slide-bg: #0f172a;
-            --primary: #0ea5e9;
-            --secondary: #1e40af;
-            --text: #f1f5f9;
-            --muted: #94a3b8;
-            --border: #334155;
-            --code-bg: #0a0f1e;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            background: var(--bg); color: var(--text);
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh; display: flex; flex-direction: column;
-            align-items: center; padding: 2rem 1rem;
-        }
-        h1, h2 { color: var(--primary); }
-        .deck-title {
-            text-align: center; margin-bottom: 2rem; padding-bottom: 1rem;
-            border-bottom: 2px solid var(--border); width: 100%; max-width: 860px;
-        }
-        .deck-title h1 { font-size: 2rem; }
-        .deck-title .meta { color: var(--muted); font-size: 0.85rem; margin-top: 0.4rem; }
-        .theme-badge {
-            display: inline-block; background: var(--secondary); color: var(--primary);
-            border-radius: 20px; padding: 0.2rem 0.9rem; font-size: 0.78rem;
-            font-weight: 600; letter-spacing: 0.05em; margin-top: 0.5rem;
-        }
-        .slide {
-            background: var(--slide-bg); border: 1px solid var(--border);
-            border-radius: 10px; width: 100%; max-width: 860px; min-height: 280px;
-            margin-bottom: 1.5rem; padding: 2.5rem 3rem;
-            display: flex; flex-direction: column; justify-content: center;
-            position: relative; box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-        }
-        .slide-number { position: absolute; top: 1rem; right: 1.5rem; font-size: 0.75rem; color: var(--muted); }
-        .slide-type-title { text-align: center; }
-        .slide-type-title h2 { font-size: 2.2rem; margin-bottom: 0.75rem; }
-        .slide-type-title .subtitle { color: var(--muted); font-size: 1.2rem; }
-        .slide-type-closing { text-align: center; border-top: 4px solid var(--primary); }
-        .slide-type-closing h2 { font-size: 2.5rem; margin-bottom: 0.75rem; }
-        .slide h2 {
-            font-size: 1.6rem; margin-bottom: 1.2rem;
-            padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
-        }
-        ul { list-style: none; padding: 0; }
-        ul li {
-            padding: 0.45rem 0 0.45rem 1.6rem; position: relative;
-            font-size: 1.05rem; line-height: 1.6;
-        }
-        ul li::before { content: '▸'; position: absolute; left: 0; color: var(--primary); }
-    </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Presentation Generator — Pitch Deck</title>
+  <style>
+    :root {
+      --bg:     #0f172a;
+      --slide:  #1e293b;
+      --accent: #0ea5e9;
+      --text:   #f1f5f9;
+      --muted:  #94a3b8;
+      --border: #334155;
+      --red:    #ef4444;
+      --code:   #0a0f1e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 2rem 1rem;
+    }
+    /* ── Deck header ── */
+    .deck-header {
+      width: 100%; max-width: 860px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 1.2rem; margin-bottom: 2rem; text-align: center;
+    }
+    .deck-header h1 { font-size: 1.7rem; color: var(--accent); }
+    .deck-header .sub { color: var(--muted); font-size: 0.85rem; margin-top: 0.4rem; }
+    /* ── Base slide ── */
+    .slide {
+      background: var(--slide); border: 1px solid var(--border);
+      border-radius: 10px; width: 100%; max-width: 860px;
+      margin-bottom: 1.5rem; padding: 2.2rem 2.8rem;
+      position: relative; box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+    .slide-num {
+      position: absolute; top: 1rem; right: 1.5rem;
+      font-size: 0.72rem; color: var(--muted);
+    }
+    /* ── Hook ── */
+    .hook-slide {
+      background: var(--bg); border-top: 4px solid var(--red);
+      text-align: center; padding: 3.5rem 2.8rem;
+    }
+    .hook-line {
+      font-size: 2.4rem; font-weight: 800; color: var(--text); line-height: 1.3;
+    }
+    /* ── Pivot ── */
+    .pivot-slide {
+      background: var(--bg); border-top: 4px solid var(--accent);
+      text-align: center; padding: 3rem 2.8rem;
+    }
+    .pivot-title { font-size: 2rem; color: var(--text); font-weight: 700; margin-bottom: 1rem; }
+    .pivot-sub { font-size: 1.1rem; color: var(--muted); font-style: italic; }
+    /* ── Body slide ── */
+    .slide-title {
+      font-size: 1.5rem; color: var(--accent); font-weight: 700;
+      margin-bottom: 1.2rem; padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .bullets { list-style: none; }
+    .bullets li {
+      padding: 0.38rem 0 0.38rem 1.5rem; position: relative;
+      font-size: 1rem; line-height: 1.6; color: var(--text);
+    }
+    .bullets li::before { content: '▸'; position: absolute; left: 0; color: var(--accent); }
+    /* ── Demo slide ── */
+    .demo-slide { background: var(--bg); text-align: center; padding: 3rem 2.8rem; }
+    .demo-title { font-size: 3rem; font-weight: 800; color: var(--text); margin-bottom: 1.5rem; }
+    .demo-sub { color: var(--muted); font-size: 0.95rem; margin-top: 1rem; font-style: italic; }
+    /* ── Command blocks ── */
+    .cmd-block {
+      background: var(--code); border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.9rem 1.2rem;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 1rem; color: var(--accent);
+      display: inline-block; margin: 0.5rem 0;
+    }
+    .cmd-large { font-size: 1.15rem; padding: 1.1rem 1.6rem; }
+    /* ── Close slide ── */
+    .close-slide {
+      background: var(--bg); border-top: 4px solid var(--accent);
+      text-align: center; padding: 3rem 2.8rem;
+    }
+    .close-eyebrow {
+      font-size: 1rem; color: var(--muted); font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1.5rem;
+    }
+    /* ── Ask slide ── */
+    .ask-slide { background: var(--bg); border-top: 4px solid var(--accent); }
+    .ask-commands { display: flex; flex-direction: column; gap: 0.5rem; margin: 1rem 0 1.2rem; }
+    .ask-cmd {
+      background: var(--code); border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.6rem 1rem;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.95rem; color: var(--accent);
+    }
+    .github-link {
+      font-size: 0.9rem; color: var(--muted); margin-top: 0.5rem;
+    }
+    /* ── Two-column ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 0.5rem; }
+    .col-heading {
+      font-size: 0.85rem; font-weight: 700; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 0.7rem; padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+    /* ── Speaker note ── */
+    .speaker-note {
+      font-size: 0.8rem; color: var(--muted); line-height: 1.6;
+      border-top: 1px solid var(--border); padding-top: 0.8rem; margin-top: 1.2rem;
+    }
+  </style>
 </head>
 <body>
-    <div class="deck-title">
-        <h1>AI Presentation Generator — From Topic to Boardroom Deck in 60 Seconds</h1>
-        <div class="meta">Generated on 2026-03-15 19:13 &bull;
-            <span class="theme-badge">Corporate theme</span>
-        </div>
+
+  <div class="deck-header">
+    <h1>AI Presentation Generator — Pitch Deck</h1>
+    <div class="sub">Type a topic. Get a boardroom-ready presentation in 60 seconds.</div>
+  </div>
+
+  
+  <section class="slide hook-slide">
+    <div class="slide-num">1 / 11</div>
+    <h2 class="hook-line">You spent 4 hours on your last presentation.</h2>
+    <div class="speaker-note"><strong>Speaker note:</strong> No bullets. Just that line. Stop. Let it sit.</div>
+  </section>
+
+  <section class="slide body-slide">
+    <div class="slide-num">2 / 11</div>
+    <h2 class="slide-title">You know the number. You just haven't said it out loud.</h2>
+    <ul class='bullets'><li>Ask the room: how long did your last important presentation take to build?</li>
+<li>Three hours? Four? Six, if it was a board deck?</li>
+<li>Now multiply that by every person in this building who builds decks.</li>
+<li>Multiply by 52 weeks.</li>
+<li>That number doesn't appear on your P&L. It should.</li></ul>
+    <div class="speaker-note"><strong>Speaker note:</strong> The audience generates the stat themselves. Their number is more powerful than any published figure.</div>
+  </section>
+
+  <section class="slide body-slide">
+    <div class="slide-num">3 / 11</div>
+    <h2 class="slide-title">You already know how to fix this. You just haven't done it.</h2>
+    <ul class='bullets'><li>Templates don't help — you still write every word</li>
+<li>Canva and Slides are faster tools for the same slow process</li>
+<li>AI assistants give you a blank page with a chatbot attached</li></ul>
+    <div class="speaker-note"><strong>Speaker note:</strong> Anticipates objections before they form. The audience is nodding — they've tried those things.</div>
+  </section>
+
+  <section class="slide pivot-slide">
+    <div class="slide-num">4 / 11</div>
+    <h2 class="pivot-title">What if the presentation wrote itself?</h2>
+    <p class="pivot-sub">Not assisted. Not templated. Written — from a single sentence you already know.</p>
+    <div class="speaker-note"><strong>Speaker note:</strong> Short slide, long pause. Let it sit.</div>
+  </section>
+
+  <section class="slide demo-slide">
+    <div class="slide-num">5 / 11</div>
+    <h2 class="demo-title">Watch.</h2>
+    <div class="cmd-block"><code>python generate.py "Your Topic" --theme corporate</code></div>
+    <p class="demo-sub">60 seconds of silence. Output appears.</p>
+    <div class="speaker-note"><strong>Speaker note:</strong> No narration during generation. None. The silence does the selling.</div>
+  </section>
+
+  <section class="slide body-slide">
+    <div class="slide-num">6 / 11</div>
+    <h2 class="slide-title">Claude didn't fill a template. It made decisions.</h2>
+    <ul class='bullets'><li>Generated narrative structure, not just bullet points</li>
+<li>Selected what to include and what to cut</li>
+<li>Wrote speaker notes so you know what to say</li>
+<li>Applied design theme in the same pass</li></ul>
+    <div class="speaker-note"><strong>Speaker note:</strong> The demo created emotion. This slide creates understanding.</div>
+  </section>
+
+  <section class="slide body-slide">
+    <div class="slide-num">7 / 11</div>
+    <h2 class="slide-title">Built to be trusted.</h2>
+    <ul class='bullets'><li>Claude Opus 4.6 with adaptive thinking — the same model used in enterprise deployments</li>
+<li>Schema-constrained JSON output — typed, parseable, version-controllable. Same schema every run.</li>
+<li>python-pptx rendering — native Office format, no conversion artifacts</li>
+<li>Three themes (dark, light, corporate) — designed for real environments, not demos</li></ul>
+    <div class="speaker-note"><strong>Speaker note:</strong> Do NOT say 'deterministic' — LLM output varies per run. Say 'schema-constrained.' A technical person will catch it.</div>
+  </section>
+
+  <section class="slide body-slide">
+    <div class="slide-num">8 / 11</div>
+    <h2 class="slide-title">Boardroom or browser — same 60 seconds.</h2>
+    <div class="two-col">
+      <div class="col">
+        <div class="col-heading">PowerPoint (.pptx)</div>
+        <ul><li>Editable in Office</li>
+<li>Speaker notes intact</li>
+<li>Native formatting</li>
+<li>Enterprise-ready</li></ul>
+      </div>
+      <div class="col">
+        <div class="col-heading">HTML</div>
+        <ul><li>No install required</li>
+<li>Share a link</li>
+<li>Runs in any browser</li>
+<li>Zero dependencies</li></ul>
+      </div>
     </div>
-    <section class="slide slide-type-title"><span class="slide-number">1/11</span><h2>AI Presentation Generator — From Topic to Boardroom Deck in 60 Seconds</h2></section><section class="slide"><span class="slide-number">2/11</span><h2>AI Presentation Generator</h2><ul><li>From Topic to Boardroom Deck in 60 Seconds</li><li>Revolutionizing how professionals create high-impact presentations</li><li>Powered by advanced generative AI and design intelligence</li><li>Faster. Smarter. More persuasive.</li></ul></section><section class="slide"><span class="slide-number">3/11</span><h2>Agenda</h2><ul><li>The Presentation Problem: Why current workflows are broken</li><li>How It Works: The 60-second pipeline from topic to deck</li><li>Core Technology: AI engines driving content and design</li><li>Key Features & Differentiators: What sets us apart</li><li>Real-World Impact: Metrics and case studies</li><li>Security & Enterprise Readiness</li><li>Roadmap & Vision</li><li>Q&A</li></ul></section><section class="slide"><span class="slide-number">4/11</span><h2>The Presentation Problem</h2><ul><li>Professionals spend 4–8 hours per week building presentations</li><li>80% of that time is spent on formatting, not strategic thinking</li><li>Inconsistent branding and messaging across teams</li><li>High-stakes decks often created under extreme time pressure</li><li>$5B+ in lost productivity annually across Fortune 500 companies</li></ul></section><section class="slide"><span class="slide-number">5/11</span><h2>How It Works: The 60-Second Pipeline</h2><ul><li>Step 1: Enter your topic, audience, and desired tone</li><li>Step 2: AI generates a structured narrative with key arguments</li><li>Step 3: Smart design engine applies brand-compliant layouts</li><li>Step 4: Speaker notes, data visualizations, and transitions auto-populated</li><li>Step 5: Review, refine, and present — all within one minute</li></ul></section><section class="slide"><span class="slide-number">6/11</span><h2>Core Technology Under the Hood</h2><ul><li>Large Language Models fine-tuned on 500K+ professional presentations</li><li>Retrieval-Augmented Generation (RAG) for real-time data integration</li><li>Proprietary design AI trained on principles of visual communication</li><li>Context-aware slide sequencing for optimal narrative flow</li><li>Continuous learning loop from user edits and feedback</li></ul></section><section class="slide"><span class="slide-number">7/11</span><h2>Key Features & Differentiators</h2><ul><li>Brand Kit Integration: Automatically enforces fonts, colors, and logo placement</li><li>Audience Adaptation: Adjusts complexity for C-suite, investors, or technical teams</li><li>Multi-format Export: PowerPoint, Google Slides, PDF, and Keynote</li><li>Collaborative Editing: Real-time team review with AI-suggested improvements</li><li>40+ languages supported with culturally aware content localization</li></ul></section><section class="slide"><span class="slide-number">8/11</span><h2>Real-World Impact: By the Numbers</h2><ul><li>93% reduction in average deck creation time (from 4 hours to 17 minutes including review)</li><li>2.4x improvement in audience engagement scores in A/B tests</li><li>78% of users report higher confidence presenting AI-generated decks</li><li>Enterprise pilot: 12,000 hours saved across 200-person sales team in Q1</li><li>NPS score of 72 among early enterprise adopters</li></ul></section><section class="slide"><span class="slide-number">9/11</span><h2>Enterprise Security & Compliance</h2><ul><li>SOC 2 Type II certified with end-to-end encryption at rest and in transit</li><li>Zero data retention policy: presentations are not used for model training</li><li>Single Sign-On (SSO) and role-based access controls</li><li>GDPR, CCPA, and HIPAA-compliant deployment options</li><li>On-premise and private cloud installation available for regulated industries</li></ul></section><section class="slide"><span class="slide-number">10/11</span><h2>Roadmap & Future Vision</h2><ul><li>Q3 2025: Live data connectors (Salesforce, Tableau, internal dashboards)</li><li>Q4 2025: Voice-to-deck — describe your presentation and watch it build</li><li>2026: AI presentation coach with real-time delivery feedback</li><li>Long-term: Autonomous executive briefings generated from enterprise data</li><li>Vision: Eliminate the gap between insight and communication entirely</li></ul></section><section class="slide slide-type-closing"><span class="slide-number">11/11</span><h2>Conclusion & Call to Action</h2></section>
+    <div class="speaker-note"><strong>Speaker note:</strong> Doubles the addressable use case without adding complexity.</div>
+  </section>
+
+  <section class="slide body-slide">
+    <div class="slide-num">9 / 11</div>
+    <h2 class="slide-title">The tool you build on, not around.</h2>
+    <ul class='bullets'><li>Add a theme in 10 lines of Python — your brand, your colors, available via --theme</li>
+<li>Point --slides at any JSON file — your data, your structure, the tool handles layout and notes</li>
+<li>Wrap it in a web form: one field, one button, your whole team has access</li>
+<li>Schedule it: weekly status deck generated and emailed every Monday, zero human intervention</li></ul>
+    <div class="speaker-note"><strong>Speaker note:</strong> Transforms the audience from users to builders.</div>
+  </section>
+
+  <section class="slide close-slide">
+    <div class="slide-num">10 / 11</div>
+    <h2 class="close-eyebrow">One command. Every presentation.</h2>
+    <div class="cmd-block cmd-large"><code>python generate.py "Your Topic" --theme corporate</code></div>
+    <div class="speaker-note"><strong>Speaker note:</strong> The close should be the simplest slide in the deck. No bullets. No logos.</div>
+  </section>
+
+  <section class="slide ask-slide">
+    <div class="slide-num">11 / 11</div>
+    <h2 class="slide-title">Run it before you leave this room.</h2>
+    <div class="ask-commands"><div class='ask-cmd'><code>pip install -r requirements.txt</code></div>
+<div class='ask-cmd'><code>export ANTHROPIC_API_KEY=your-key</code></div>
+<div class='ask-cmd'><code>python generate.py "Your next meeting"</code></div></div>
+    <div class="github-link">&#x1F4E6; github.com/Moodswing9/Headbanger-s-Little-Repository</div>
+    <div class="speaker-note"><strong>Speaker note:</strong> The ask is specific, immediate, and low-risk. 'Run it' is not 'evaluate it.'</div>
+  </section>
+
 </body>
 </html>
