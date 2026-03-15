@@ -47,8 +47,9 @@ QA = [
     ),
     (
         "\"What's the quality ceiling? Can I actually send this to a client?\"",
-        "The clients who've seen the output don't know it was generated.\n\n"
-        "It produces a structured argument — the 80% that doesn't require you.\n\n"
+        "I'll answer that with a question: what's the quality ceiling of a first draft from your best analyst?\n\n"
+        "That analyst still needs your feedback, your edits, your judgment. So does this.\n\n"
+        "What the tool produces is a structured argument — the 80% that doesn't require you. "
         "You spend your time on the 20% that does. You're still the author."
     ),
     (
