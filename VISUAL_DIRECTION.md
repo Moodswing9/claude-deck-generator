@@ -1,0 +1,290 @@
+# Visual Direction Brief
+## AI Presentation Generator — Creative Direction for a $10,000 Deck
+
+*Prepared in the style of a top design agency.*
+*This brief governs every visual decision. If it's not in here, the answer is no.*
+
+---
+
+## THE CREATIVE MANDATE
+
+This presentation is about a tool that makes things look effortless.
+The deck must *be* the proof of concept.
+If the slides look labored, the argument collapses.
+
+**Design philosophy:** Restraint as confidence.
+Every element that isn't there is as intentional as every element that is.
+
+---
+
+## COLOR PALETTE
+
+### Primary System
+
+| Role | Name | Hex | Usage |
+|------|------|-----|-------|
+| Background | Void | `#0A0F1E` | All slide backgrounds |
+| Surface | Obsidian | `#111827` | Card backgrounds, code blocks |
+| Border | Slate | `#1F2937` | Dividers, subtle borders only |
+| Accent | Signal Blue | `#0EA5E9` | One highlight per slide. Maximum. |
+| Text | Snow | `#F9FAFB` | All body copy |
+| Muted | Ash | `#6B7280` | Labels, metadata, captions |
+
+### Accent hierarchy — enforced strictly
+
+- **One accent color per slide.** If everything is highlighted, nothing is.
+- Accent touches: a single word, a number, an underline, a thin bar.
+- Never fill a shape with the accent color unless it is the *only* element on that slide.
+
+### Forbidden
+
+- Gradients on text
+- Drop shadows
+- More than two colors visible on any single slide
+- Any shade of beige, tan, or "warm gray"
+
+---
+
+## TYPOGRAPHY
+
+### Font Pairings
+
+| Role | Font | Weight | Size Range |
+|------|------|--------|------------|
+| Headline | **Inter** | 700 (Bold) | 40–56pt |
+| Subheadline | **Inter** | 400 (Regular) | 22–28pt |
+| Body | **Inter** | 300 (Light) | 16–18pt |
+| Code / Command | **JetBrains Mono** | 400 | 18–22pt |
+| Label / Caption | **Inter** | 400 | 11–13pt, tracked +0.1em |
+
+### Why Inter
+
+Inter was designed for screens at the instruction of a single principle: maximum legibility at any size, in any weight, on any background. Apple uses it. Stripe uses it. It disappears and lets the content speak.
+
+### Type rules
+
+1. **Hierarchy through weight, never size alone.** A 400-weight 40pt headline and a 700-weight 40pt headline are not the same slide. One commands. One whispers.
+2. **Tracking on labels.** Any text under 14pt gets +0.08em letter-spacing. It breathes.
+3. **Line length cap.** No text block wider than 60 characters per line. Ever.
+4. **Alignment.** Left-aligned, always. Center only for single-word or single-number slides. Right alignment: never.
+
+### Fallback (Windows / PowerPoint)
+
+- Inter → **Segoe UI**
+- JetBrains Mono → **Consolas**
+
+---
+
+## SLIDE LAYOUT PRINCIPLES
+
+### The Grid
+
+```
+Margins:   0.6" left/right,  0.4" top,  0.5" bottom
+Gutter:    0.25" between content columns
+Max width: 8.8" (on a 10" slide)
+```
+
+### The Three Layout Templates
+
+**Template A — Statement**
+One sentence. 40pt bold. Vertically centered.
+Nothing else on the slide.
+*Use for: pivots, reveals, closing lines.*
+
+```
+┌─────────────────────────────┐
+│                             │
+│                             │
+│   "Type a topic.            │
+│    Get a presentation."     │
+│                             │
+│                             │
+└─────────────────────────────┘
+```
+
+**Template B — Metric**
+One large number. Left-aligned. Label below in muted text.
+Thin accent bar at left edge.
+*Use for: data moments, before/after, cost numbers.*
+
+```
+┌─────────────────────────────┐
+│ ▌                           │
+│ ▌  60                       │
+│ ▌  seconds to first draft   │
+│                             │
+│                             │
+└─────────────────────────────┘
+```
+
+**Template C — Content**
+Headline at top. Three to four bullets below.
+Accent bar left of headline. No bullet symbols — use em-dash or thin rule.
+*Use for: feature slides, objection slides, architecture.*
+
+```
+┌─────────────────────────────┐
+│ ▌ Headline                  │
+│ ─────────────────────────── │
+│   — First point             │
+│   — Second point            │
+│   — Third point             │
+│                             │
+└─────────────────────────────┘
+```
+
+### Whitespace rule
+
+Every slide must have at least **40% empty space**.
+If you're filling the slide, you're writing an email, not a presentation.
+
+---
+
+## IMAGE STYLE
+
+### The directive
+
+No stock photography. No Shutterstock people shaking hands.
+No abstract "technology" imagery (blue circuits, data streams, glowing orbs).
+
+### What to use instead
+
+**Terminal screenshots**
+Actual command-line output. Real. Unretouched. Cropped tightly.
+This is the product. Show it.
+
+**Code snippets**
+Syntax-highlighted. Dark background. Monospace. Two to five lines maximum.
+If it needs more lines than that, it doesn't belong on a slide.
+
+**Diagrams — line art only**
+Single-color line diagrams on dark backgrounds.
+Before/after timelines. Flow with two nodes. Nothing with more than four elements.
+Built in Figma or drawn manually. Never generated by PowerPoint's SmartArt.
+
+**Numbers as images**
+A large number, full-bleed, is more powerful than any photograph.
+Treat `$40,000` the way Apple treats product renders.
+
+### What never appears
+
+- Humans (stock or otherwise)
+- Logos of competitors
+- Icons from Noun Project or Flaticon
+- Any image that could appear in a different presentation
+
+---
+
+## CHART TYPES
+
+### Permitted
+
+| Chart type | When to use | Rules |
+|------------|-------------|-------|
+| **Two-bar comparison** | Before vs. after | No legend. Label bars directly. Gap between bars is the story. |
+| **Single number** | One metric that wins the room | Full slide. 80pt minimum. Unit in muted text below. |
+| **Horizontal timeline** | Process, sequence, time to value | Two to three points maximum. No arrows — use dots and a line. |
+| **Two-column table** | Feature comparison, options, formats | Alternating row tint at 5% opacity. No grid lines. |
+
+### Forbidden chart types
+
+- Pie charts (ever)
+- 3D charts (ever)
+- Radar/spider charts
+- Any chart with a legend (redesign it so it doesn't need one)
+- Stacked bar charts
+- Line charts with more than two lines
+
+### Chart styling
+
+- Background: transparent (inherits slide background)
+- Axis lines: `#1F2937` — barely visible
+- Data color: `#0EA5E9` (accent), or `#F9FAFB` (text) for secondary
+- No gridlines
+- Label every data point directly — no tooltips, no hover states
+
+---
+
+## 3 DESIGN RULES THAT MAKE EVERY SLIDE LOOK LIKE IT COST $10,000
+
+---
+
+### Rule 1 — One Idea Per Slide. Full Stop.
+
+Not one topic. Not one section. **One idea.**
+
+If you can remove a word and the slide still communicates, remove it.
+If you can remove a bullet and the slide still works, remove it.
+If you can remove a slide and the argument still holds, remove the slide.
+
+The discipline of subtraction is what separates a $500 deck from a $10,000 one.
+Anyone can add. Only a great designer knows what to kill.
+
+**Test:** Cover the slide with your hand. What do you remember when you uncover it?
+If the answer is more than one thing, the slide fails.
+
+---
+
+### Rule 2 — Align Everything to an Invisible Grid. Then Align It Again.
+
+Misalignment is the fastest way to signal amateur work.
+Not because the audience consciously notices it.
+Because their subconscious does — and transfers that feeling to your credibility.
+
+Every text element: snapped to the 0.6" left margin.
+Every shape: edges touching the grid, not approximating it.
+Every number: the decimal point in the same horizontal position across slides.
+
+Use guides. Lock them. Don't move them for a single slide.
+
+**The trick the agencies use:** After you think it's aligned, zoom to 200% and check again.
+The pixel you see at 100% that looks fine is the pixel that loses the room.
+
+---
+
+### Rule 3 — The Accent Is a Budget. Spend It Wisely.
+
+You get one accent color per slide.
+One highlighted word. One blue number. One thin bar.
+
+When you use it on everything, it means nothing.
+When you use it on one thing, it means *look here*.
+
+The best slides in this deck will have the accent on exactly the number or word
+that carries the entire argument of the slide.
+
+If you're unsure what to highlight: ask what you'd say if you had to describe the slide
+in five words to someone with their eyes closed.
+Whatever those five words are — that's where the accent goes.
+
+**The $10,000 version of your slide:** One accent touch. Placed exactly right.
+**The $200 version:** Accent on the title, the bullets, the border, the icon, and the footer.
+Same color. Zero power.
+
+---
+
+## THE BRIEF IN ONE SENTENCE
+
+> Dark background. Inter font. One idea. One accent touch. Nothing that doesn't earn its space.
+
+If a slide breaks any of these five rules, it goes back.
+If it follows all five, it looks like it cost $10,000.
+Because it does.
+
+---
+
+## PRODUCTION CHECKLIST
+
+Before any slide leaves review:
+
+- [ ] One idea per slide
+- [ ] 40%+ whitespace
+- [ ] Accent color used once, on the right element
+- [ ] All text left-aligned (or centered for single-word slides)
+- [ ] No gradients, shadows, or more than two colors
+- [ ] Line length under 60 characters
+- [ ] All elements snapped to the 0.6" grid
+- [ ] No stock imagery, icons, or SmartArt
+- [ ] Chart has no legend, no gridlines, directly labeled
+- [ ] Speaker notes: one sentence on what to say, one on what NOT to say
