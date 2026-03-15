@@ -1,4 +1,5 @@
 *.pptx
+!AI_Presentation_Generator_Pitch.pptx
 __pycache__/
 *.pyc
 .env
