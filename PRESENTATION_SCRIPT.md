@@ -46,19 +46,20 @@
 **Headline:** "That's not a time problem. That's a focus problem."
 
 **Bullets:**
-- The average executive spends 26 hours per month on presentations
-- 68% of that time is formatting — not thinking
-- Every hour in PowerPoint is an hour not spent on the decision you're building the deck for
+- Ask the room: how long did your last important presentation take to build?
+- Three hours? Four? Six, if it was a board deck?
+- Now multiply that by every person in this building who builds decks. Multiply by 52 weeks.
+- That number doesn't appear on your P&L. It should.
 
 ---
 
 **SCRIPT:**
 
-"Twenty-six hours a month. That's three full working days. Every single month. Gone."
+"Ask yourself — how long did your last important presentation take to build? Three hours? Four? Six, if it was a board deck?"
 
 [BEAT]
 
-"And here's the number that should keep you up at night: sixty-eight percent of that time isn't spent on your argument. It's spent on fonts. On alignment. On whether the logo is in the right corner."
+"Now multiply that by every person in this building who builds decks. Multiply by 52 weeks. That number doesn't appear on your P&L. It should."
 
 [BEAT]
 
@@ -234,7 +235,7 @@
 
 **Bullets:**
 - Claude Opus 4.6 with adaptive thinking — the same model used in enterprise deployments
-- Structured JSON schema — deterministic, parseable, version-controllable output
+- Schema-constrained JSON output — typed, parseable, version-controllable. Same schema every run.
 - python-pptx rendering — native Office format, zero conversion artifacts
 
 ---
