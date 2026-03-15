@@ -50,6 +50,7 @@ One-off decks with bespoke layouts that `generate.py` can't produce:
 | File | Output | Description |
 |------|--------|-------------|
 | `build_closing_slide.py` | `Closing_Slide.pptx` | Single closing slide — white bg, red bar, three metric rows, command block |
+| `build_objection_slides.py` | `Objection_Handling_Slides.pptx` | 9-slide objection deck — title + 6 objections (concede/flip/close) + master close + delivery principles |
 | `build_qa_slides.py` | `QA_Prep_Slides.pptx` | 12-slide Q&A deck — numbered badge per question, bridging phrases, golden rule |
 | `build_visual_direction_slides.py` | `Visual_Direction.pptx` | 12-slide design brief — dark theme, Signal Blue accent used once per slide |
 
