@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Opening Slide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a0f;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+        }
+
+        .terminal {
+            width: 100%;
+            max-width: 860px;
+            padding: 0 3rem;
+        }
+
+        .prompt {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .prompt-symbol {
+            color: #0ea5e9;
+            font-size: 1.4rem;
+            font-weight: bold;
+            opacity: 0;
+            animation: fade-in 0.3s ease forwards;
+            animation-delay: 0.3s;
+        }
+
+        .command {
+            color: #f1f5f9;
+            font-size: clamp(1.1rem, 2.5vw, 1.55rem);
+            letter-spacing: 0.03em;
+            opacity: 0;
+            animation: fade-in 0.4s ease forwards;
+            animation-delay: 0.7s;
+        }
+
+        .command span.flag {
+            color: #0ea5e9;
+        }
+
+        .command span.value {
+            color: #e94560;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.3em;
+            background: #f1f5f9;
+            vertical-align: middle;
+            margin-left: 4px;
+            animation: blink 1s step-end infinite;
+            opacity: 0;
+            animation: fade-in 0s forwards, blink 1s step-end 1.1s infinite;
+            animation-delay: 1.1s;
+        }
+
+        .output {
+            margin-top: 1.2rem;
+            opacity: 0;
+            animation: fade-in 0.5s ease forwards;
+            animation-delay: 2.8s;
+        }
+
+        .output-line {
+            color: #94a3b8;
+            font-size: clamp(0.85rem, 1.8vw, 1.05rem);
+            line-height: 2;
+            letter-spacing: 0.02em;
+        }
+
+        .output-line.done {
+            color: #0ea5e9;
+            font-weight: bold;
+        }
+
+        .tagline {
+            margin-top: 4rem;
+            opacity: 0;
+            animation: fade-in 0.8s ease forwards;
+            animation-delay: 4s;
+        }
+
+        .tagline p {
+            color: #334155;
+            font-size: clamp(0.75rem, 1.4vw, 0.95rem);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+
+        <div class="prompt">
+            <span class="prompt-symbol">$</span>
+            <span class="command">
+                python generate.py
+                <span class="value">"Your next board meeting"</span>
+                <span class="flag">--theme</span>
+                <span class="value">corporate</span>
+                <span class="cursor"></span>
+            </span>
+        </div>
+
+        <div class="output">
+            <div class="output-line">Generating content for: Your next board meeting</div>
+            <div class="output-line">Saved: Your next board meeting.pptx &nbsp;(10 slides, corporate theme)</div>
+            <div class="output-line done">Done.</div>
+        </div>
+
+        <div class="tagline">
+            <p>github.com/Moodswing9/Headbanger-s-Little-Repository</p>
+        </div>
+
+    </div>
+</body>
+</html>
