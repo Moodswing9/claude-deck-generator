@@ -43,11 +43,35 @@ Adding a new theme means adding one dict entry with both sets of keys.
 - Output filename is auto-derived from the topic (alphanumeric + spaces/dashes/underscores, max 40 chars) if `--output` is not specified.
 - `.pptx` files are gitignored except `AI_Presentation_Generator_Pitch.pptx`.
 
+## Custom slide builders
+
+One-off decks with bespoke layouts that `generate.py` can't produce:
+
+| File | Output | Description |
+|------|--------|-------------|
+| `build_closing_slide.py` | `Closing_Slide.pptx` | Single closing slide — white bg, red bar, three metric rows, command block |
+| `build_qa_slides.py` | `QA_Prep_Slides.pptx` | 12-slide Q&A deck — numbered badge per question, bridging phrases, golden rule |
+| `build_visual_direction_slides.py` | `Visual_Direction.pptx` | 12-slide design brief — dark theme, Signal Blue accent used once per slide |
+
+Each builder is self-contained, requires only `python-pptx`, and uses `prs.slide_layouts[6]` (blank) with all elements drawn manually. No API call needed — content is hardcoded.
+
 ## Presentation assets
 
-The repo also contains pitch materials for the tool itself:
-- `PRESENTATION_BLUEPRINT.md` — narrative strategy and slide rationale
-- `PRESENTATION_SCRIPT.md` — word-for-word speaker script with pause marks
-- `DATA_NARRATIVE.md` — McKinsey-style data framework for pitching the tool
-- `opening_slide.html` — animated terminal hook slide for live presentations
-- `AI_Presentation_Generator_Pitch.pptx` / `.html` — the actual pitch deck
+The repo ships a full boardroom playbook for pitching the tool itself:
+
+| File | What it is |
+|------|------------|
+| `AI_Presentation_Generator_Pitch.pptx` / `.html` | 10-slide pitch deck, corporate theme |
+| `Closing_Slide.pptx` | Single closing slide — white bg, three numbers, one command |
+| `QA_Prep_Slides.pptx` | 12-slide Q&A deck — 10 hardest questions, bridging phrases, golden rule |
+| `Objection_Handling_Slides.pptx` / `.html` | 6 objections preemptively neutralized |
+| `Visual_Direction.pptx` | 12-slide design brief embodying every rule it describes |
+| `opening_slide.html` | Animated terminal hook for live presentations |
+| `PRESENTATION_BLUEPRINT.md` | Narrative strategy and slide rationale |
+| `PRESENTATION_SCRIPT.md` | Word-for-word speaker script with pause marks |
+| `DATA_NARRATIVE.md` | McKinsey-style data framework for pitching the tool |
+| `EXECUTIVE_SUMMARY.md` | 60-word Goldman Sachs-style summary slide |
+| `OBJECTION_SLIDES.md` | Concede-flip-close structure for 6 common objections |
+| `CLOSING_SLIDE.md` | Master closer framework with full script |
+| `QA_PREP.md` | 10 hardest questions with sharp answers + 3 bridging phrases |
+| `VISUAL_DIRECTION.md` | Creative direction brief — palette, typography, layouts, chart rules |
