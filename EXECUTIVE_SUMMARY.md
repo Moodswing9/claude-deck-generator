@@ -10,7 +10,7 @@
 
 | Section | Content |
 |---------|---------|
-| **Problem** | Executives spend 26 hours/month on presentations. 68% is formatting, not thinking. The cost never appears on a P&L. It should. |
+| **Problem** | Ask anyone in this room how long their last deck took. Multiply by headcount. Multiply by 52 weeks. That number doesn't appear on your P&L. It should. |
 | **Solution** | One command. Claude Opus 4.6 generates structure, argument, and speaker notes. 60 seconds. Native .pptx or .html. |
 | **Proof** | Live. Schema-constrained output. Open source. Run it in this room. |
 | **Ask** | Three commands. Judge the output yourself. |

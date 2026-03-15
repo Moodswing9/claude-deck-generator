@@ -40,7 +40,7 @@ Say: "This took me 45 seconds to fix. The alternative was starting from scratch.
 
 **Speaker note:**
 If the room is enterprise-security conscious, point to the JSON schema output.
-The API call is auditable, deterministic, and contains exactly what you type as the topic.
+The API call is auditable and transparent — it contains exactly what you type as the topic, nothing more.
 
 ---
 
