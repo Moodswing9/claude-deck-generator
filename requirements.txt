@@ -1,2 +1,2 @@
-anthropic
-python-pptx
+anthropic==0.84.0
+python-pptx==1.0.2

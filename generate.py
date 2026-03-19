@@ -14,7 +14,9 @@ Formats: pptx (default), html
 import argparse
 import json
 import os
+import pathlib
 import sys
+import time
 from datetime import datetime
 
 import anthropic
@@ -85,6 +87,54 @@ THEMES = {
 
 DEFAULT_THEME = "dark"
 
+TOPIC_MAX_LENGTH = 200
+
+# ---------------------------------------------------------------------------
+# Input validation
+# ---------------------------------------------------------------------------
+
+def validate_topic(topic: str) -> str:
+    """Validate and sanitize the presentation topic."""
+    topic = topic.strip()
+    if not topic:
+        print("Error: topic required")
+        sys.exit(1)
+    if len(topic) > TOPIC_MAX_LENGTH:
+        print(f"Error: topic must be {TOPIC_MAX_LENGTH} characters or fewer (got {len(topic)})")
+        sys.exit(1)
+    return topic
+
+
+def validate_output_path(path: str, fmt: str) -> str:
+    """Reject paths that escape the current working directory."""
+    cwd = pathlib.Path.cwd().resolve()
+    resolved = (cwd / path).resolve()
+    if not str(resolved).startswith(str(cwd)):
+        print(f"Error: output path '{path}' is outside the current directory")
+        sys.exit(1)
+    if not resolved.suffix:
+        resolved = resolved.with_suffix(f".{fmt}")
+    return str(resolved)
+
+
+# ---------------------------------------------------------------------------
+# Rate limiter
+# ---------------------------------------------------------------------------
+
+_last_api_call: float = 0.0
+_MIN_INTERVAL = 10.0  # minimum seconds between API calls
+
+
+def _check_rate_limit():
+    global _last_api_call
+    elapsed = time.monotonic() - _last_api_call
+    if _last_api_call and elapsed < _MIN_INTERVAL:
+        wait = _MIN_INTERVAL - elapsed
+        print(f"Rate limit: waiting {wait:.1f}s before next API call...")
+        time.sleep(wait)
+    _last_api_call = time.monotonic()
+
+
 # ---------------------------------------------------------------------------
 # Claude API — generate slide content
 # ---------------------------------------------------------------------------
@@ -113,6 +163,7 @@ SLIDE_SCHEMA = {
 
 
 def generate_content(topic: str) -> dict:
+    _check_rate_limit()
     client = anthropic.Anthropic()
     print(f"Generating content for: {topic}")
     response = client.messages.create(
@@ -346,16 +397,14 @@ def main():
             print(f"  {key:<12} {t['name']}{marker}")
         return
 
-    topic = args.topic or input("Enter presentation topic: ").strip()
-    if not topic:
-        print("Error: topic required")
-        sys.exit(1)
+    topic = validate_topic(args.topic or input("Enter presentation topic: ").strip())
 
     theme = THEMES[args.theme]
     data = generate_content(topic)
 
     safe = "".join(c if c.isalnum() or c in " _-" else "_" for c in topic)[:40].strip()
-    output = args.output or f"{safe}.{args.format}"
+    raw_output = args.output or f"{safe}.{args.format}"
+    output = validate_output_path(raw_output, args.format)
 
     if args.format == "pptx":
         build_pptx(data, theme, output)
