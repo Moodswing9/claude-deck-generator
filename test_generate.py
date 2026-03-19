@@ -10,6 +10,7 @@ No ANTHROPIC_API_KEY required — all Claude API calls are mocked.
 import json
 import os
 import tempfile
+import time
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -30,6 +31,7 @@ from generate import (
     generate_content,
     validate_topic,
     validate_output_path,
+    _check_rate_limit,
 )
 
 
@@ -426,6 +428,45 @@ class TestValidateOutputPath(unittest.TestCase):
         # A path that stays within cwd should be accepted
         result = validate_output_path("subdir/output.pptx", "pptx")
         self.assertTrue(result.startswith(cwd))
+
+
+# ---------------------------------------------------------------------------
+# _check_rate_limit tests
+# ---------------------------------------------------------------------------
+
+class TestCheckRateLimit(unittest.TestCase):
+
+    def setUp(self):
+        # Reset global state before each test
+        import generate
+        generate._last_api_call = 0.0
+
+    def test_first_call_passes_immediately(self):
+        start = time.monotonic()
+        _check_rate_limit()
+        self.assertLess(time.monotonic() - start, 1.0)
+
+    def test_second_call_within_interval_sleeps(self):
+        import generate
+        generate._last_api_call = time.monotonic()  # simulate a very recent call
+        with patch("generate.time.sleep") as mock_sleep:
+            _check_rate_limit()
+            mock_sleep.assert_called_once()
+            wait = mock_sleep.call_args[0][0]
+            self.assertGreater(wait, 0)
+
+    def test_second_call_after_interval_passes_immediately(self):
+        import generate
+        generate._last_api_call = time.monotonic() - 20.0  # well past the interval
+        with patch("generate.time.sleep") as mock_sleep:
+            _check_rate_limit()
+            mock_sleep.assert_not_called()
+
+    def test_updates_last_api_call_timestamp(self):
+        import generate
+        before = time.monotonic()
+        _check_rate_limit()
+        self.assertGreaterEqual(generate._last_api_call, before)
 
 
 if __name__ == "__main__":

@@ -281,7 +281,7 @@ def build():
 
     out = "QA_Prep_Slides.pptx"
     prs.save(out)
-    print(f"Saved: {out}  ({2 + len(QA)} slides)")
+    print(f"Saved: {out}  ({1 + len(QA) + 2} slides)")
 
 
 if __name__ == "__main__":

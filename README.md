@@ -60,10 +60,10 @@ The [v3.0.0 release](https://github.com/Moodswing9/Headbanger-s-Little-Repositor
 
 | File | What it is |
 |------|------------|
-| `AI_Presentation_Generator_Pitch.pptx` | 10-slide boardroom pitch, speaker notes included |
+| `AI_Presentation_Generator_Pitch.pptx` | 11-slide boardroom pitch, speaker notes included |
 | `Closing_Slide.pptx` | Single closing slide — white background, three numbers, one command |
 | `QA_Prep_Slides.pptx` | 12-slide Q&A deck — 10 hardest questions, bridging phrases, golden rule |
-| `Objection_Handling_Slides.pptx` | 6 objections, preemptively neutralized |
+| `Objection_Handling_Slides.pptx` | 9-slide deck — title + 6 objections (concede/flip/close) + master close + delivery principles |
 | `Visual_Direction.pptx` | 12-slide design brief — dark theme, one accent per slide, embodies every rule it describes |
 
 ### Playbook
