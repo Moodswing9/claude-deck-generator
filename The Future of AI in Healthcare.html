@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>The Future of AI in Healthcare</title>
+    <style>
+        :root {
+            --bg: #eeece6;
+            --slide-bg: #f5f4f0;
+            --primary: #b88600;
+            --secondary: #ece9e1;
+            --text: #0d1b2a;
+            --muted: #55657a;
+            --border: #e2ded5;
+            --code-bg: #f0ede8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: 'Georgia', 'Times New Roman', serif;
+            min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; padding: 2rem 1rem;
+        }
+        h1, h2 { color: var(--primary); }
+        .deck-title {
+            text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.2rem;
+            border-bottom: 2px solid var(--border); width: 100%; max-width: 900px;
+        }
+        .deck-title h1 { font-size: 2.2rem; letter-spacing: -0.02em; }
+        .deck-title .subtitle { color: var(--muted); font-size: 1.1rem; margin-top: 0.5rem; }
+        .deck-title .meta { color: var(--muted); font-size: 0.82rem; margin-top: 0.6rem; }
+        .theme-badge {
+            display: inline-block; background: var(--secondary); color: var(--primary);
+            border-radius: 20px; padding: 0.2rem 0.9rem; font-size: 0.78rem;
+            font-weight: 600; letter-spacing: 0.05em; margin-top: 0.5rem;
+        }
+        /* Base slide */
+        .slide {
+            background: var(--slide-bg); border: 1px solid var(--border);
+            border-radius: 12px; width: 100%; max-width: 900px; min-height: 300px;
+            margin-bottom: 1.5rem; padding: 2.8rem 3.5rem;
+            display: flex; flex-direction: column; justify-content: center;
+            position: relative; box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+            border-left: 4px solid transparent;
+        }
+        .slide-number { position: absolute; top: 1rem; right: 1.5rem; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.05em; }
+        /* Title slide */
+        .slide-type-title {
+            border-left: 4px solid var(--primary);
+            min-height: 340px;
+        }
+        .slide-type-title h2 { font-size: 2.6rem; letter-spacing: -0.02em; margin-bottom: 0.8rem; line-height: 1.2; }
+        .slide-type-title .subtitle { color: var(--muted); font-size: 1.15rem; margin-top: 0.3rem; }
+        /* Section slide */
+        .slide-type-section {
+            background: var(--primary); border-color: var(--primary);
+            border-left: 4px solid rgba(0,0,0,0.15);
+        }
+        .slide-type-section h2 { color: var(--slide-bg); font-size: 2.2rem; letter-spacing: -0.01em; }
+        .slide-type-section .slide-number { color: rgba(255,255,255,0.5); }
+        /* Content slide */
+        .slide-type-content h2 {
+            font-size: 1.7rem; margin-bottom: 1.4rem; padding-bottom: 0.6rem;
+            border-bottom: 1px solid var(--border);
+        }
+        ul { list-style: none; padding: 0; }
+        ul li {
+            padding: 0.5rem 0 0.5rem 1.8rem; position: relative;
+            font-size: 1.08rem; line-height: 1.65;
+        }
+        ul li::before { content: '▸'; position: absolute; left: 0; color: var(--primary); font-size: 0.85em; top: 0.6rem; }
+        /* Quote slide */
+        .slide-type-quote { border-left: 4px solid var(--primary); }
+        .slide-type-quote .quote-mark { font-size: 5rem; color: var(--primary); line-height: 0.8; margin-bottom: 0.5rem; opacity: 0.6; }
+        .slide-type-quote .quote-text { font-size: 1.35rem; line-height: 1.7; font-style: italic; margin-bottom: 1.2rem; }
+        .slide-type-quote .attribution { color: var(--muted); font-size: 0.95rem; border-top: 1px solid var(--border); padding-top: 0.8rem; }
+        /* Stat slide */
+        .slide-type-stat { text-align: center; }
+        .slide-type-stat h2 { font-size: 1.2rem; color: var(--muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; }
+        .slide-type-stat .stat-number { font-size: 5.5rem; font-weight: 700; color: var(--primary); line-height: 1; margin-bottom: 0.6rem; letter-spacing: -0.03em; }
+        .slide-type-stat .stat-label { font-size: 1.2rem; color: var(--text); }
+        /* Closing slide */
+        .slide-type-closing {
+            text-align: center; border-top: 4px solid var(--primary);
+            border-left: none; border-radius: 12px;
+        }
+        .slide-type-closing h2 { font-size: 2.6rem; margin-bottom: 0.75rem; }
+    </style>
+</head>
+<body>
+    <div class="deck-title">
+        <h1>The Future of AI in Healthcare</h1>
+        <p class="subtitle">Transforming Care Delivery, Discovery, and Decision-Making</p>
+        <div class="meta">Generated on 2026-03-30 17:49 &bull;
+            <span class="theme-badge">Executive theme</span>
+        </div>
+    </div>
+    <section class="slide slide-type-title"><span class="slide-number">1 / 13</span><h2>The Future of AI in Healthcare</h2><p class="subtitle">Transforming Care Delivery, Discovery, and Decision-Making</p></section><section class="slide slide-type-stat"><span class="slide-number">2 / 13</span><h2>A Market Inflection Point</h2><div class="stat-number">$187B</div><div class="stat-label">Projected global AI in healthcare market by 2030 — a 10x increase from 2023</div></section><section class="slide slide-type-content"><span class="slide-number">3 / 13</span><h2>Today's Agenda</h2><ul><li>The current state of AI in clinical practice</li><li>Transformative applications reshaping care delivery</li><li>Drug discovery and precision medicine breakthroughs</li><li>Critical barriers and the path to scaled adoption</li></ul></section><section class="slide slide-type-section"><span class="slide-number">4 / 13</span><h2>The Current Landscape</h2></section><section class="slide slide-type-content"><span class="slide-number">5 / 13</span><h2>AI Is Already Embedded in Clinical Workflows</h2><ul><li>FDA has approved over 900 AI-enabled medical devices</li><li>Radiology and cardiology lead in AI adoption rates</li><li>EHR-integrated tools now flag deteriorating patients in real-time</li><li>Telehealth platforms leverage AI triage at massive scale</li></ul></section><section class="slide slide-type-stat"><span class="slide-number">6 / 13</span><h2>Diagnostic Precision at Scale</h2><div class="stat-number">87.6%</div><div class="stat-label">AI sensitivity in detecting breast cancer from mammograms — surpassing average radiologist performance</div></section><section class="slide slide-type-section"><span class="slide-number">7 / 13</span><h2>Transformative Applications</h2></section><section class="slide slide-type-content"><span class="slide-number">8 / 13</span><h2>Reimagining Care Delivery Models</h2><ul><li>Predictive models reduce hospital readmissions by 25%+</li><li>AI-powered remote monitoring enables hospital-at-home care</li><li>Natural language processing automates 40% of clinical documentation</li><li>Digital twins simulate patient responses before treatment</li></ul></section><section class="slide slide-type-content"><span class="slide-number">9 / 13</span><h2>Accelerating Drug Discovery & Precision Medicine</h2><ul><li>AI compresses drug candidate screening from years to weeks</li><li>Genomic AI identifies optimal therapies per patient profile</li><li>Synthetic data generation overcomes clinical trial diversity gaps</li><li>Foundation models unlock insights from multimodal patient data</li></ul></section><section class="slide slide-type-quote"><span class="slide-number">10 / 13</span><div class="quote-mark">&ldquo;</div><p class="quote-text">AI will not replace physicians, but physicians who use AI will replace those who don't.</p><p class="attribution">&mdash; Dr. Eric Topol, Founder of Scripps Research Translational Institute</p></section><section class="slide slide-type-section"><span class="slide-number">11 / 13</span><h2>Barriers & the Path Forward</h2></section><section class="slide slide-type-content"><span class="slide-number">12 / 13</span><h2>Critical Barriers to Scaled Adoption</h2><ul><li>Data fragmentation and interoperability remain systemic challenges</li><li>Algorithmic bias risks widening existing health disparities</li><li>Regulatory frameworks lag behind the pace of innovation</li><li>Clinician trust requires transparent, explainable AI models</li></ul></section><section class="slide slide-type-closing"><span class="slide-number">13 / 13</span><h2>Strategic Imperatives for Leadership</h2></section>
+</body>
+</html>
