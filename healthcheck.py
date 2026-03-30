@@ -13,7 +13,7 @@ import subprocess
 import sys
 
 
-REQUIRED_PACKAGES = ["anthropic", "pptx", "streamlit"]
+REQUIRED_PACKAGES = ["anthropic", "pptx", "streamlit", "requests"]
 REQUIRED_FILES = ["generate.py", "app.py", "requirements.txt", "test_generate.py", "CLAUDE.md"]
 
 PASS = "\033[92m PASS\033[0m"
@@ -63,6 +63,12 @@ def run():
     else:
         check("  ANTHROPIC_API_KEY", False, "not set", warn=True)
         failures += 1
+
+    unsplash_key = os.environ.get("UNSPLASH_ACCESS_KEY", "")
+    if unsplash_key:
+        check("  UNSPLASH_ACCESS_KEY", True, f"{unsplash_key[:8]}... (images enabled)")
+    else:
+        check("  UNSPLASH_ACCESS_KEY", True, "not set (optional — images disabled)", warn=False)
 
     # 4. Git status
     print("\n-- Git --")

@@ -505,5 +505,92 @@ class TestCheckRateLimit(unittest.TestCase):
         self.assertGreaterEqual(generate._last_api_call, before)
 
 
+# ---------------------------------------------------------------------------
+# fetch_slide_images tests
+# ---------------------------------------------------------------------------
+
+class TestFetchSlideImages(unittest.TestCase):
+
+    def _slides(self):
+        return [
+            {"type": "content", "title": "Renewable Energy"},
+            {"type": "section", "title": "Part One"},
+            {"type": "stat", "title": "Market Size"},
+        ]
+
+    @patch.dict(os.environ, {}, clear=False)
+    def test_returns_empty_dict_when_no_api_key(self):
+        import generate as g
+        original = g.UNSPLASH_ACCESS_KEY
+        g.UNSPLASH_ACCESS_KEY = ""
+        try:
+            result = g.fetch_slide_images(self._slides())
+            self.assertEqual(result, {})
+        finally:
+            g.UNSPLASH_ACCESS_KEY = original
+
+    def test_skips_section_slides(self):
+        import generate as g
+        original = g.UNSPLASH_ACCESS_KEY
+        g.UNSPLASH_ACCESS_KEY = "fake-key"
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"results": [{"urls": {"small": "https://example.com/img.jpg"}}]}
+        try:
+            with patch("generate.requests.get", return_value=mock_resp) as mock_get:
+                result = g.fetch_slide_images(self._slides())
+                # section slide "Part One" should not trigger a request
+                called_queries = [call.kwargs.get("params", {}).get("query") or call.args[1].get("query")
+                                  for call in mock_get.call_args_list
+                                  if mock_get.call_args_list]
+                self.assertNotIn("Part One", [
+                    c[1].get("params", {}).get("query") if len(c) > 1 else None
+                    for c in [list(ca) for ca in mock_get.call_args_list]
+                ])
+        finally:
+            g.UNSPLASH_ACCESS_KEY = original
+
+    def test_returns_image_urls_for_content_slides(self):
+        import generate as g
+        original = g.UNSPLASH_ACCESS_KEY
+        g.UNSPLASH_ACCESS_KEY = "fake-key"
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"results": [{"urls": {"small": "https://example.com/img.jpg"}}]}
+        try:
+            with patch("generate.requests.get", return_value=mock_resp):
+                result = g.fetch_slide_images(self._slides())
+                self.assertIn("Renewable Energy", result)
+                self.assertEqual(result["Renewable Energy"], "https://example.com/img.jpg")
+        finally:
+            g.UNSPLASH_ACCESS_KEY = original
+
+    def test_handles_api_error_gracefully(self):
+        import generate as g
+        original = g.UNSPLASH_ACCESS_KEY
+        g.UNSPLASH_ACCESS_KEY = "fake-key"
+        try:
+            with patch("generate.requests.get", side_effect=Exception("network error")):
+                result = g.fetch_slide_images(self._slides())
+                # Should return empty dict, not raise
+                self.assertIsInstance(result, dict)
+        finally:
+            g.UNSPLASH_ACCESS_KEY = original
+
+    def test_handles_empty_results(self):
+        import generate as g
+        original = g.UNSPLASH_ACCESS_KEY
+        g.UNSPLASH_ACCESS_KEY = "fake-key"
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"results": []}
+        try:
+            with patch("generate.requests.get", return_value=mock_resp):
+                result = g.fetch_slide_images(self._slides())
+                self.assertNotIn("Renewable Energy", result)
+        finally:
+            g.UNSPLASH_ACCESS_KEY = original
+
+
 if __name__ == "__main__":
     unittest.main()

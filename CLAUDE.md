@@ -11,10 +11,14 @@ pip install -r requirements.txt
 # Run the generator
 python generate.py "Your Topic"
 python generate.py "Your Topic" --theme corporate --format html
+python generate.py "Your Topic" --images          # embed Unsplash photos
 python generate.py --list-themes
 
 # Required environment variable
 export ANTHROPIC_API_KEY=sk-ant-...
+
+# Optional — enables --images flag
+export UNSPLASH_ACCESS_KEY=your-unsplash-access-key
 ```
 
 ## Architecture

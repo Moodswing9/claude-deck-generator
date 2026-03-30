@@ -7,6 +7,9 @@ Generate professional presentations from any topic using Claude AI. Outputs a st
 ```bash
 pip install -r requirements.txt
 export ANTHROPIC_API_KEY=sk-ant-...
+
+# Optional — enables Unsplash photos on slides (--images flag)
+export UNSPLASH_ACCESS_KEY=your-unsplash-access-key
 ```
 
 ## Usage
@@ -19,9 +22,10 @@ python generate.py "Your Topic"
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--theme` | `dark` | Color theme: `dark`, `light`, `corporate` |
+| `--theme` | `dark` | Color theme: `dark`, `light`, `corporate`, `executive` |
 | `--format` | `pptx` | Output format: `pptx` or `html` |
 | `--output` | auto | Output file path |
+| `--images` | off | Embed Unsplash photos (requires `UNSPLASH_ACCESS_KEY`) |
 | `--list-themes` | — | List available themes and exit |
 
 ## Examples
