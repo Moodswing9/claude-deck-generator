@@ -300,9 +300,6 @@ def _pptx_content_slide(prs, title, bullets, notes, theme):
         run.font.size = Pt(19)
         run.font.name = "Calibri"
         run.font.color.rgb = theme["text"]
-        # Accent dot
-        dot = p.add_run()
-        dot  # noqa — bullet marker added via text prefix
 
     if notes:
         slide.notes_slide.notes_text_frame.text = notes

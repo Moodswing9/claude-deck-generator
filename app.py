@@ -125,10 +125,24 @@ if st.button("Generate Presentation", type="primary", use_container_width=True):
         # Slide preview
         with st.expander("Slide outline", expanded=True):
             st.markdown(f"### {data['title']}")
+            if data.get("subtitle"):
+                st.markdown(f"*{data['subtitle']}*")
             for i, slide in enumerate(data["slides"], 1):
-                st.markdown(f"**{i}. {slide['title']}**")
-                for bullet in slide["bullets"]:
-                    st.markdown(f"- {bullet}")
+                stype = slide.get("type", "content")
+                if stype == "section":
+                    st.markdown(f"**{i}. {slide['title']}** *(section break)*")
+                elif stype == "quote":
+                    st.markdown(f"**{i}. {slide['title']}** *(quote)*")
+                    if slide.get("quote"):
+                        st.markdown(f'  > "{slide["quote"]}"')
+                elif stype == "stat":
+                    st.markdown(f"**{i}. {slide['title']}** *(stat)*")
+                    if slide.get("stat"):
+                        st.markdown(f"  **{slide['stat']}** — {slide.get('stat_label', '')}")
+                else:
+                    st.markdown(f"**{i}. {slide['title']}**")
+                    for bullet in slide["bullets"]:
+                        st.markdown(f"- {bullet}")
 
 # ---------------------------------------------------------------------------
 # Sidebar — API key hint

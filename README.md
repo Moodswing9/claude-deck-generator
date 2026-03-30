@@ -44,6 +44,7 @@ python generate.py "Machine Learning" --theme light --output ml.pptx
 | `dark` | Dark background with light text (default) |
 | `light` | Light background with dark text |
 | `corporate` | Professional blue/slate palette |
+| `executive` | Warm off-white background with gold accent — boardroom ready |
 
 ## How It Works
 

@@ -19,7 +19,7 @@ export ANTHROPIC_API_KEY=sk-ant-...
 
 ## Architecture
 
-The entire tool lives in a single file: `generate.py`.
+The core generation lives in `generate.py`, which is also imported by `app.py` (Streamlit web UI) and `healthcheck.py`. The `build_*.py` files are standalone one-off deck builders.
 
 **Data flow:** CLI args → `generate_content()` (Claude API) → `build_pptx()` or `build_html()` → file on disk.
 
@@ -31,7 +31,7 @@ Adding a new theme means adding one dict entry with both sets of keys.
 
 **`generate_content()`** calls `claude-opus-4-6` with `thinking: {type: "adaptive"}` and `output_config.format` set to `SLIDE_SCHEMA` (a JSON schema). The response is guaranteed to be valid JSON matching the schema — parse the first `text` block directly with `json.loads()`.
 
-**`SLIDE_SCHEMA`** defines the structure Claude must return: `{title, slides: [{title, bullets[], notes}]}`. The first slide in `data["slides"]` is slide 2 (the HTML builder prepends a title slide from `data["title"]`); the pptx builder calls `_pptx_title_slide()` separately.
+**`SLIDE_SCHEMA`** defines the structure Claude must return: `{title, subtitle, slides: [{type, title, bullets[], notes, quote?, attribution?, stat?, stat_label?}]}`. Slide types: `content`, `section`, `quote`, `stat`. The HTML builder prepends a title slide from `data["title"]`; the pptx builder calls `_pptx_title_slide()` separately.
 
 **`build_pptx()`** uses blank slide layout (`prs.slide_layouts[6]`) for all slides and draws everything manually via `add_textbox` and `add_shape` — it does not use PowerPoint's built-in layouts/placeholders.
 
@@ -41,7 +41,7 @@ Adding a new theme means adding one dict entry with both sets of keys.
 
 - `ANTHROPIC_API_KEY` must be set in the environment — the tool will raise an `AuthenticationError` without it.
 - Output filename is auto-derived from the topic (alphanumeric + spaces/dashes/underscores, max 40 chars) if `--output` is not specified.
-- `.pptx` files are gitignored except `AI_Presentation_Generator_Pitch.pptx`.
+- `.pptx` files are no longer gitignored — all presentation files are committed.
 
 ## Custom slide builders
 
