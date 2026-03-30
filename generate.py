@@ -6,12 +6,14 @@ Uses Claude to generate slide content from a topic, then outputs a styled
 
 Usage:
     python generate.py "Your Topic" [--theme THEME] [--format FORMAT] [--output FILE]
+    python generate.py "Your Topic" --images   # embed Unsplash photos
 
-Themes:  dark (default), light, corporate
+Themes:  dark (default), light, corporate, executive
 Formats: pptx (default), html
 """
 
 import argparse
+import io
 import json
 import os
 import pathlib
@@ -20,6 +22,7 @@ import time
 from datetime import datetime
 
 import anthropic
+import requests
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
@@ -155,6 +158,53 @@ def _check_rate_limit():
 
 
 # ---------------------------------------------------------------------------
+# Unsplash image fetcher
+# ---------------------------------------------------------------------------
+
+UNSPLASH_ACCESS_KEY = os.environ.get("UNSPLASH_ACCESS_KEY", "")
+_UNSPLASH_API = "https://api.unsplash.com/search/photos"
+
+
+def fetch_slide_images(slides: list) -> dict:
+    """Return {slide_title: image_url} for each slide using Unsplash search."""
+    if not UNSPLASH_ACCESS_KEY:
+        print("Warning: UNSPLASH_ACCESS_KEY not set — skipping images.")
+        return {}
+
+    images = {}
+    headers = {"Authorization": f"Client-ID {UNSPLASH_ACCESS_KEY}"}
+    for slide in slides:
+        title = slide.get("title", "")
+        if not title or slide.get("type") == "section":
+            continue
+        try:
+            resp = requests.get(
+                _UNSPLASH_API,
+                headers=headers,
+                params={"query": title, "per_page": 1, "orientation": "landscape"},
+                timeout=6,
+            )
+            if resp.status_code == 200:
+                results = resp.json().get("results", [])
+                if results:
+                    images[title] = results[0]["urls"]["small"]
+        except Exception:
+            pass
+    return images
+
+
+def _download_image(url: str) -> io.BytesIO | None:
+    """Download an image URL into a BytesIO buffer."""
+    try:
+        resp = requests.get(url, timeout=10)
+        if resp.status_code == 200:
+            return io.BytesIO(resp.content)
+    except Exception:
+        pass
+    return None
+
+
+# ---------------------------------------------------------------------------
 # Claude API — generate slide content
 # ---------------------------------------------------------------------------
 
@@ -273,23 +323,26 @@ def _pptx_title_slide(prs, title, subtitle, theme):
                   size=20, color=theme["subtext"], align=PP_ALIGN.LEFT)
 
 
-def _pptx_content_slide(prs, title, bullets, notes, theme):
+def _pptx_content_slide(prs, title, bullets, notes, theme, image_stream=None):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _pptx_set_bg(slide, theme["bg"])
+
+    # With image: text on left 55%, image on right 40%
+    text_width = 5.5 if image_stream else 8.8
 
     bar = slide.shapes.add_shape(1, Inches(0.5), Inches(1.1), Inches(0.06), Inches(0.55))
     bar.fill.solid()
     bar.fill.fore_color.rgb = theme["accent"]
     bar.line.fill.background()
 
-    _pptx_textbox(slide, title, 0.7, 0.28, 8.8, 0.9, size=28, bold=True, color=theme["text"])
+    _pptx_textbox(slide, title, 0.7, 0.28, text_width, 0.9, size=28, bold=True, color=theme["text"])
 
-    div = slide.shapes.add_shape(1, Inches(0.5), Inches(1.12), Inches(9), Inches(0.02))
+    div = slide.shapes.add_shape(1, Inches(0.5), Inches(1.12), Inches(text_width + 0.2), Inches(0.02))
     div.fill.solid()
     div.fill.fore_color.rgb = theme["divider"]
     div.line.fill.background()
 
-    tb = slide.shapes.add_textbox(Inches(0.7), Inches(1.35), Inches(8.8), Inches(4.0))
+    tb = slide.shapes.add_textbox(Inches(0.7), Inches(1.35), Inches(text_width), Inches(4.0))
     tf = tb.text_frame
     tf.word_wrap = True
     for i, bullet in enumerate(bullets):
@@ -300,6 +353,9 @@ def _pptx_content_slide(prs, title, bullets, notes, theme):
         run.font.size = Pt(19)
         run.font.name = "Calibri"
         run.font.color.rgb = theme["text"]
+
+    if image_stream:
+        slide.shapes.add_picture(image_stream, Inches(6.4), Inches(1.2), Inches(3.2), Inches(3.8))
 
     if notes:
         slide.notes_slide.notes_text_frame.text = notes
@@ -363,7 +419,8 @@ def _pptx_stat_slide(prs, title, stat, stat_label, notes, theme):
         slide.notes_slide.notes_text_frame.text = notes
 
 
-def build_pptx(data: dict, theme: dict, output_path: str):
+def build_pptx(data: dict, theme: dict, output_path: str, images: dict = None):
+    images = images or {}
     prs = Presentation()
     prs.slide_width = Inches(10)
     prs.slide_height = Inches(5.625)
@@ -380,7 +437,8 @@ def build_pptx(data: dict, theme: dict, output_path: str):
             _pptx_stat_slide(prs, s["title"], s.get("stat", ""),
                              s.get("stat_label", ""), notes, theme)
         else:
-            _pptx_content_slide(prs, s["title"], s["bullets"], notes, theme)
+            image_stream = _download_image(images[s["title"]]) if s["title"] in images else None
+            _pptx_content_slide(prs, s["title"], s["bullets"], notes, theme, image_stream)
     prs.save(output_path)
 
 
@@ -472,6 +530,11 @@ def _css(theme: dict) -> str:
             border-left: none; border-radius: 12px;
         }}
         .slide-type-closing h2 {{ font-size: 2.6rem; margin-bottom: 0.75rem; }}
+        /* Image layout */
+        .slide-has-image .slide-body {{ display: flex; gap: 2rem; align-items: center; }}
+        .slide-has-image .slide-text {{ flex: 1; }}
+        .slide-has-image .slide-image {{ flex: 0 0 38%; }}
+        .slide-has-image .slide-image img {{ width: 100%; border-radius: 8px; object-fit: cover; max-height: 220px; }}
     """
 
 
@@ -512,13 +575,24 @@ def _slide_html(slide: dict, index: int, total: int) -> str:
                 f'<div class="stat-number">{stat}</div>'
                 f'<div class="stat-label">{label}</div></section>')
 
+    image_url = slide.get("image_url", "")
+    if image_url:
+        return (f'<section class="slide slide-type-content slide-has-image">{num}'
+                f'<div class="slide-body">'
+                f'<div class="slide-text"><h2>{title}</h2><ul>{items}</ul></div>'
+                f'<div class="slide-image"><img src="{image_url}" alt="{title}"/></div>'
+                f'</div></section>')
     return (f'<section class="slide slide-type-content">{num}'
             f'<h2>{title}</h2><ul>{items}</ul></section>')
 
 
-def build_html(data: dict, theme: dict, output_path: str):
+def build_html(data: dict, theme: dict, output_path: str, images: dict = None):
+    images = images or {}
+    content_slides = [
+        {**s, "image_url": images.get(s["title"], "")} for s in data["slides"]
+    ]
     title_slide = {"title": data["title"], "subtitle": data.get("subtitle", ""), "type": "title"}
-    slides = [title_slide] + data["slides"]
+    slides = [title_slide] + content_slides
     total = len(slides)
     slides_html = "".join(_slide_html(s, i + 1, total) for i, s in enumerate(slides))
     generated_at = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -562,6 +636,8 @@ def main():
                         help="Output file path (default: auto-named from topic)")
     parser.add_argument("--list-themes", action="store_true",
                         help="List available themes and exit")
+    parser.add_argument("--images", action="store_true",
+                        help="Embed Unsplash photos (requires UNSPLASH_ACCESS_KEY)")
     args = parser.parse_args()
 
     if args.list_themes:
@@ -575,14 +651,20 @@ def main():
     theme = THEMES[args.theme]
     data = generate_content(topic)
 
+    images = {}
+    if args.images:
+        print("Fetching Unsplash images...")
+        images = fetch_slide_images(data["slides"])
+        print(f"Found images for {len(images)} slides.")
+
     safe = "".join(c if c.isalnum() or c in " _-" else "_" for c in topic)[:40].strip()
     raw_output = args.output or f"{safe}.{args.format}"
     output = validate_output_path(raw_output, args.format)
 
     if args.format == "pptx":
-        build_pptx(data, theme, output)
+        build_pptx(data, theme, output, images)
     else:
-        build_html(data, theme, output)
+        build_html(data, theme, output, images)
 
     print(f"Saved: {output}  ({len(data['slides'])} slides, {args.theme} theme)")
 

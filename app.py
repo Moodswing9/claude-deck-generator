@@ -18,7 +18,9 @@ from generate import (
     THEMES,
     DEFAULT_THEME,
     TOPIC_MAX_LENGTH,
+    UNSPLASH_ACCESS_KEY,
     generate_content,
+    fetch_slide_images,
     build_pptx,
     build_html,
     validate_topic,
@@ -64,6 +66,14 @@ with col2:
         format_func=lambda f: "PowerPoint (.pptx)" if f == "pptx" else "HTML (.html)",
     )
 
+use_images = st.checkbox(
+    "Embed Unsplash photos",
+    value=False,
+    disabled=not UNSPLASH_ACCESS_KEY,
+    help="Adds a relevant photo to each content slide. Requires UNSPLASH_ACCESS_KEY."
+         if not UNSPLASH_ACCESS_KEY else "Fetches one photo per content slide from Unsplash.",
+)
+
 # ---------------------------------------------------------------------------
 # Generate
 # ---------------------------------------------------------------------------
@@ -89,6 +99,11 @@ if st.button("Generate Presentation", type="primary", use_container_width=True):
                 st.error(f"Failed to generate content: {e}")
                 st.stop()
 
+        images = {}
+        if use_images:
+            with st.spinner("Fetching Unsplash images…"):
+                images = fetch_slide_images(data["slides"])
+
         st.success(f"Generated {len(data['slides'])} slides with the **{THEMES[theme_choice]['name']}** theme.")
 
         # Build the output file in memory
@@ -96,7 +111,7 @@ if st.button("Generate Presentation", type="primary", use_container_width=True):
             with tempfile.NamedTemporaryFile(suffix=".pptx", delete=False) as f:
                 tmp_path = f.name
             try:
-                build_pptx(data, theme, tmp_path)
+                build_pptx(data, theme, tmp_path, images)
                 with open(tmp_path, "rb") as f:
                     file_bytes = f.read()
             finally:
@@ -107,7 +122,7 @@ if st.button("Generate Presentation", type="primary", use_container_width=True):
             with tempfile.NamedTemporaryFile(suffix=".html", delete=False, mode="w", encoding="utf-8") as f:
                 tmp_path = f.name
             try:
-                build_html(data, theme, tmp_path)
+                build_html(data, theme, tmp_path, images)
                 with open(tmp_path, "r", encoding="utf-8") as f:
                     file_bytes = f.read().encode("utf-8")
             finally:
