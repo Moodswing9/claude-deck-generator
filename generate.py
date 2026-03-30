@@ -85,21 +85,21 @@ THEMES = {
     },
     "executive": {
         "name": "Executive",
-        # pptx colors — clean white, deep navy, gold accent
-        "bg": RGBColor(0xFF, 0xFF, 0xFF),
+        # pptx colors — warm off-white, deep navy, gold accent
+        "bg": RGBColor(0xF5, 0xF4, 0xF0),
         "accent": RGBColor(0xB8, 0x86, 0x00),
         "text": RGBColor(0x0D, 0x1B, 0x2A),
         "subtext": RGBColor(0x55, 0x65, 0x7A),
-        "divider": RGBColor(0xE2, 0xE8, 0xF0),
+        "divider": RGBColor(0xE2, 0xDE, 0xD5),
         # html colors
-        "background": "#f8f9fb",
-        "slide_bg": "#ffffff",
+        "background": "#eeece6",
+        "slide_bg": "#f5f4f0",
         "primary": "#b88600",
-        "secondary": "#f1f5f9",
+        "secondary": "#ece9e1",
         "html_text": "#0d1b2a",
         "muted": "#55657a",
-        "border": "#e2e8f0",
-        "code_bg": "#f8fafc",
+        "border": "#e2ded5",
+        "code_bg": "#f0ede8",
         "font_family": "'Georgia', 'Times New Roman', serif",
     },
 }
