@@ -144,5 +144,11 @@ with st.sidebar:
     )
     st.divider()
     st.markdown("**Themes**")
+    descriptions = {
+        "dark": "Dark navy, red accent",
+        "light": "White, blue accent",
+        "corporate": "Dark slate, sky blue",
+        "executive": "White, gold accent — boardroom ready",
+    }
     for key, t in THEMES.items():
-        st.markdown(f"- `{key}` — {t['name']}")
+        st.markdown(f"- `{key}` — {descriptions.get(key, t['name'])}")

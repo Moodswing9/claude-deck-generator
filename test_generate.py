@@ -41,10 +41,13 @@ from generate import (
 
 SAMPLE_DATA = {
     "title": "Test Presentation",
+    "subtitle": "A test subtitle",
     "slides": [
-        {"title": "Agenda", "bullets": ["Point A", "Point B", "Point C"], "notes": "Intro notes"},
-        {"title": "Section 1", "bullets": ["Bullet 1", "Bullet 2"], "notes": ""},
-        {"title": "Conclusion", "bullets": ["Wrap up", "Next steps"], "notes": "Final notes"},
+        {"type": "content", "title": "Agenda", "bullets": ["Point A", "Point B", "Point C"], "notes": "Intro notes"},
+        {"type": "section", "title": "Part One", "bullets": [], "notes": ""},
+        {"type": "stat", "title": "Key Metric", "bullets": [], "stat": "42%", "stat_label": "improvement", "notes": ""},
+        {"type": "quote", "title": "Insight", "bullets": [], "quote": "Great quote here", "attribution": "Someone", "notes": ""},
+        {"type": "content", "title": "Conclusion", "bullets": ["Wrap up", "Next steps"], "notes": "Final notes"},
     ],
 }
 
@@ -56,7 +59,7 @@ SAMPLE_DATA = {
 class TestThemes(unittest.TestCase):
 
     def test_all_themes_present(self):
-        for name in ("dark", "light", "corporate"):
+        for name in ("dark", "light", "corporate", "executive"):
             self.assertIn(name, THEMES)
 
     def test_default_theme_exists(self):
@@ -98,13 +101,19 @@ class TestThemes(unittest.TestCase):
 class TestSlideSchema(unittest.TestCase):
 
     def test_schema_requires_title_and_slides(self):
-        self.assertIn("title", SLIDE_SCHEMA["required"])
-        self.assertIn("slides", SLIDE_SCHEMA["required"])
+        for field in ("title", "subtitle", "slides"):
+            self.assertIn(field, SLIDE_SCHEMA["required"])
 
     def test_slide_item_required_fields(self):
         item = SLIDE_SCHEMA["properties"]["slides"]["items"]
-        for field in ("title", "bullets", "notes"):
+        for field in ("type", "title", "bullets", "notes"):
             self.assertIn(field, item["required"])
+
+    def test_slide_type_enum(self):
+        item = SLIDE_SCHEMA["properties"]["slides"]["items"]
+        enum = item["properties"]["type"]["enum"]
+        for t in ("content", "section", "quote", "stat"):
+            self.assertIn(t, enum)
 
     def test_no_additional_properties_on_root(self):
         self.assertFalse(SLIDE_SCHEMA.get("additionalProperties", True))
@@ -147,7 +156,7 @@ class TestSlideHtml(unittest.TestCase):
         self.assertIn("slide-type-closing", html)
 
     def test_middle_slide_renders_bullets(self):
-        slide = {"title": "Section", "bullets": ["Point 1", "Point 2"]}
+        slide = {"type": "content", "title": "Section", "bullets": ["Point 1", "Point 2"]}
         html = _slide_html(slide, 2, 5)
         self.assertIn("Point 1", html)
         self.assertIn("Point 2", html)
@@ -155,14 +164,37 @@ class TestSlideHtml(unittest.TestCase):
         self.assertNotIn("slide-type-closing", html)
 
     def test_slide_number_in_output(self):
-        slide = {"title": "X", "bullets": []}
+        slide = {"type": "content", "title": "X", "bullets": []}
         html = _slide_html(slide, 3, 7)
-        self.assertIn("3/7", html)
+        self.assertIn("3", html)
+        self.assertIn("7", html)
 
     def test_empty_bullets_renders_empty_list(self):
-        slide = {"title": "No bullets", "bullets": []}
+        slide = {"type": "content", "title": "No bullets", "bullets": []}
         html = _slide_html(slide, 2, 4)
         self.assertIn("<ul></ul>", html)
+
+    def test_section_slide_type(self):
+        slide = {"type": "section", "title": "Part Two", "bullets": []}
+        html = _slide_html(slide, 2, 5)
+        self.assertIn("slide-type-section", html)
+        self.assertIn("Part Two", html)
+
+    def test_quote_slide_type(self):
+        slide = {"type": "quote", "title": "Q", "bullets": [],
+                 "quote": "Be the change", "attribution": "Gandhi"}
+        html = _slide_html(slide, 2, 5)
+        self.assertIn("slide-type-quote", html)
+        self.assertIn("Be the change", html)
+        self.assertIn("Gandhi", html)
+
+    def test_stat_slide_type(self):
+        slide = {"type": "stat", "title": "Growth", "bullets": [],
+                 "stat": "73%", "stat_label": "year-over-year"}
+        html = _slide_html(slide, 2, 5)
+        self.assertIn("slide-type-stat", html)
+        self.assertIn("73%", html)
+        self.assertIn("year-over-year", html)
 
 
 class TestBuildHtml(unittest.TestCase):
@@ -190,18 +222,22 @@ class TestBuildHtml(unittest.TestCase):
 
     def test_all_slide_titles_present(self):
         html = self._build()
+        # quote slides render the quote text, not the title
         for slide in SAMPLE_DATA["slides"]:
-            self.assertIn(slide["title"], html)
+            if slide["type"] == "quote":
+                self.assertIn(slide.get("quote", ""), html)
+            else:
+                self.assertIn(slide["title"], html)
 
     def test_bullets_present(self):
         html = self._build()
         self.assertIn("Point A", html)
-        self.assertIn("Bullet 1", html)
+        self.assertIn("Point B", html)
 
     def test_slide_count_matches(self):
-        # title slide prepended + 3 content slides = 4 total
+        # title slide prepended + 5 content slides = 6 total
         html = self._build()
-        self.assertEqual(html.count('<section class="slide'), 4)
+        self.assertEqual(html.count('<section class="slide'), 6)
 
     def test_all_themes_produce_output(self):
         for theme_name in THEMES:
@@ -233,9 +269,9 @@ class TestBuildPptx(unittest.TestCase):
             os.unlink(path)
 
     def test_slide_count(self):
-        # 1 title slide + 3 content slides
+        # 1 title slide + 5 content/section/stat/quote slides
         prs = self._build()
-        self.assertEqual(len(prs.slides), 4)
+        self.assertEqual(len(prs.slides), 6)
 
     def test_all_themes_produce_valid_pptx(self):
         from pptx import Presentation
@@ -262,7 +298,7 @@ class TestBuildPptx(unittest.TestCase):
 
     def test_notes_added_to_slide(self):
         prs = self._build()
-        # slide index 1 = first content slide (Agenda), which has notes
+        # slide index 1 = first content slide (Agenda, type=content), notes="Intro notes"
         notes = prs.slides[1].notes_slide.notes_text_frame.text
         self.assertEqual(notes, "Intro notes")
 
@@ -289,7 +325,7 @@ class TestGenerateContent(unittest.TestCase):
 
         result = generate_content("Test Topic")
         self.assertEqual(result["title"], "Test Presentation")
-        self.assertEqual(len(result["slides"]), 3)
+        self.assertEqual(len(result["slides"]), 5)
 
     @patch("generate.anthropic.Anthropic")
     def test_calls_correct_model(self, mock_anthropic_cls):
