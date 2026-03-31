@@ -14,6 +14,11 @@ import os
 
 import streamlit as st
 
+# Inject secrets into environment so generate.py can find them
+for _key in ("ANTHROPIC_API_KEY", "UNSPLASH_ACCESS_KEY"):
+    if _key not in os.environ and _key in st.secrets:
+        os.environ[_key] = st.secrets[_key]
+
 from generate import (
     THEMES,
     DEFAULT_THEME,
