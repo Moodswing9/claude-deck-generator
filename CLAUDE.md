@@ -54,6 +54,7 @@ One-off decks with bespoke layouts that `generate.py` can't produce:
 | File | Output | Description |
 |------|--------|-------------|
 | `build_closing_slide.py` | `Closing_Slide.pptx` | Single closing slide — white bg, red bar, three metric rows, command block |
+| `build_closing_slide_html.py` | `Closing_Slide.html` | HTML mirror of the closing slide — self-contained, no external dependencies |
 | `build_objection_slides.py` | `Objection_Handling_Slides.pptx` | 9-slide objection deck — title + 6 objections (concede/flip/close) + master close + delivery principles |
 | `build_objection_slides_html.py` | `Objection_Handling_Slides.html` | HTML mirror of the objection deck — self-contained, no external dependencies |
 | `build_pitch_html.py` | `AI_Presentation_Generator_Pitch.html` | 11-slide pitch HTML — mirrors PRESENTATION_BLUEPRINT.md slide-for-slide, no fabricated stats |

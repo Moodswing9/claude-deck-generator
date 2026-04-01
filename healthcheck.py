@@ -13,7 +13,7 @@ import subprocess
 import sys
 
 
-REQUIRED_PACKAGES = ["anthropic", "pptx", "streamlit", "requests"]
+REQUIRED_PACKAGES = ["anthropic", "pptx", "streamlit", "requests"]  # pptx = python-pptx
 REQUIRED_FILES = ["generate.py", "app.py", "requirements.txt", "test_generate.py", "CLAUDE.md"]
 
 PASS = "\033[92m PASS\033[0m"
