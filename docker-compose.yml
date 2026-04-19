@@ -1,0 +1,11 @@
+services:
+  pptx-generator:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - UNSPLASH_ACCESS_KEY=${UNSPLASH_ACCESS_KEY:-}
+    volumes:
+      - ./.streamlit:/app/.streamlit
+    restart: unless-stopped

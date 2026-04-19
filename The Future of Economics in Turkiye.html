@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>The Future of Economics in Türkiye</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --slide-bg: #16213e;
+            --primary: #e94560;
+            --secondary: #0f3460;
+            --text: #eaeaea;
+            --muted: #a0a0b0;
+            --border: #0f3460;
+            --code-bg: #0d0d1a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; padding: 2rem 1rem;
+        }
+        h1, h2 { color: var(--primary); }
+        .deck-title {
+            text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.2rem;
+            border-bottom: 2px solid var(--border); width: 100%; max-width: 900px;
+        }
+        .deck-title h1 { font-size: 2.2rem; letter-spacing: -0.02em; }
+        .deck-title .subtitle { color: var(--muted); font-size: 1.1rem; margin-top: 0.5rem; }
+        .deck-title .meta { color: var(--muted); font-size: 0.82rem; margin-top: 0.6rem; }
+        .theme-badge {
+            display: inline-block; background: var(--secondary); color: var(--primary);
+            border-radius: 20px; padding: 0.2rem 0.9rem; font-size: 0.78rem;
+            font-weight: 600; letter-spacing: 0.05em; margin-top: 0.5rem;
+        }
+        /* Base slide */
+        .slide {
+            background: var(--slide-bg); border: 1px solid var(--border);
+            border-radius: 12px; width: 100%; max-width: 900px; min-height: 300px;
+            margin-bottom: 1.5rem; padding: 2.8rem 3.5rem;
+            display: flex; flex-direction: column; justify-content: center;
+            position: relative; box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+            border-left: 4px solid transparent;
+        }
+        .slide-number { position: absolute; top: 1rem; right: 1.5rem; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.05em; }
+        /* Title slide */
+        .slide-type-title {
+            border-left: 4px solid var(--primary);
+            min-height: 340px;
+        }
+        .slide-type-title h2 { font-size: 2.6rem; letter-spacing: -0.02em; margin-bottom: 0.8rem; line-height: 1.2; }
+        .slide-type-title .subtitle { color: var(--muted); font-size: 1.15rem; margin-top: 0.3rem; }
+        /* Section slide */
+        .slide-type-section {
+            background: var(--primary); border-color: var(--primary);
+            border-left: 4px solid rgba(0,0,0,0.15);
+        }
+        .slide-type-section h2 { color: var(--slide-bg); font-size: 2.2rem; letter-spacing: -0.01em; }
+        .slide-type-section .slide-number { color: rgba(255,255,255,0.5); }
+        /* Content slide */
+        .slide-type-content h2 {
+            font-size: 1.7rem; margin-bottom: 1.4rem; padding-bottom: 0.6rem;
+            border-bottom: 1px solid var(--border);
+        }
+        ul { list-style: none; padding: 0; }
+        ul li {
+            padding: 0.5rem 0 0.5rem 1.8rem; position: relative;
+            font-size: 1.08rem; line-height: 1.65;
+        }
+        ul li::before { content: '▸'; position: absolute; left: 0; color: var(--primary); font-size: 0.85em; top: 0.6rem; }
+        /* Quote slide */
+        .slide-type-quote { border-left: 4px solid var(--primary); }
+        .slide-type-quote .quote-mark { font-size: 5rem; color: var(--primary); line-height: 0.8; margin-bottom: 0.5rem; opacity: 0.6; }
+        .slide-type-quote .quote-text { font-size: 1.35rem; line-height: 1.7; font-style: italic; margin-bottom: 1.2rem; }
+        .slide-type-quote .attribution { color: var(--muted); font-size: 0.95rem; border-top: 1px solid var(--border); padding-top: 0.8rem; }
+        /* Stat slide */
+        .slide-type-stat { text-align: center; }
+        .slide-type-stat h2 { font-size: 1.2rem; color: var(--muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; }
+        .slide-type-stat .stat-number { font-size: 5.5rem; font-weight: 700; color: var(--primary); line-height: 1; margin-bottom: 0.6rem; letter-spacing: -0.03em; }
+        .slide-type-stat .stat-label { font-size: 1.2rem; color: var(--text); }
+        /* Closing slide */
+        .slide-type-closing {
+            text-align: center; border-top: 4px solid var(--primary);
+            border-left: none; border-radius: 12px;
+        }
+        .slide-type-closing h2 { font-size: 2.6rem; margin-bottom: 0.75rem; }
+        /* Image layout */
+        .slide-has-image .slide-body { display: flex; gap: 2rem; align-items: center; }
+        .slide-has-image .slide-text { flex: 1; }
+        .slide-has-image .slide-image { flex: 0 0 38%; }
+        .slide-has-image .slide-image img { width: 100%; border-radius: 8px; object-fit: cover; max-height: 220px; }
+    </style>
+</head>
+<body>
+    <div class="deck-title">
+        <h1>The Future of Economics in Türkiye</h1>
+        <p class="subtitle">Strategic Outlook for Growth, Resilience & Global Competitiveness</p>
+        <div class="meta">Generated on 2026-03-31 18:17 &bull;
+            <span class="theme-badge">Dark theme</span>
+        </div>
+    </div>
+    <section class="slide slide-type-title"><span class="slide-number">1 / 13</span><h2>The Future of Economics in Türkiye</h2><p class="subtitle">Strategic Outlook for Growth, Resilience & Global Competitiveness</p></section><section class="slide slide-type-stat"><span class="slide-number">2 / 13</span><h2>A Rising Economic Power at a Crossroads</h2><div class="stat-number">$1.1T</div><div class="stat-label">Türkiye's GDP in 2023 — the world's 17th largest economy, positioning it as the bridge between Europe and Asia's growth corridors</div></section><section class="slide slide-type-content slide-has-image"><span class="slide-number">3 / 13</span><div class="slide-body"><div class="slide-text"><h2>Agenda</h2><ul><li>Macroeconomic landscape & current trajectory</li><li>Strategic growth pillars driving the next decade</li><li>Digital transformation & demographic dividends</li><li>Key risks, vulnerabilities & resilience strategies</li><li>Outlook and implications for stakeholders</li></ul></div><div class="slide-image"><img src="https://images.unsplash.com/photo-1653669485150-3eda1804e4d2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5MTA5NDZ8MHwxfHNlYXJjaHwxfHxBZ2VuZGF8ZW58MHwwfHx8MTc3NDk3MDIxNXww&ixlib=rb-4.1.0&q=80&w=400" alt="Agenda"/></div></div></section><section class="slide slide-type-section"><span class="slide-number">4 / 13</span><h2>The Macroeconomic Landscape</h2></section><section class="slide slide-type-content"><span class="slide-number">5 / 13</span><h2>Current Economic Snapshot</h2><ul><li>Orthodox monetary policy restored with rates above 45%</li><li>Inflation declining from 85% peak toward single-digit targets</li><li>Foreign reserves rebuilding after years of depletion</li><li>Current account deficit narrowing on tourism and exports</li><li>Credit rating upgrades signal renewed investor confidence</li></ul></section><section class="slide slide-type-stat"><span class="slide-number">6 / 13</span><h2>The Inflation Challenge Remains Central</h2><div class="stat-number">~65%</div><div class="stat-label">Year-over-year consumer inflation as of early 2024 — a generational challenge requiring sustained policy discipline over multiple years</div></section><section class="slide slide-type-section"><span class="slide-number">7 / 13</span><h2>Strategic Growth Pillars for the Next Decade</h2></section><section class="slide slide-type-content"><span class="slide-number">8 / 13</span><h2>Industrial Base & Global Supply Chain Repositioning</h2><ul><li>Nearshoring trend redirects European manufacturing to Türkiye</li><li>Customs union modernization unlocks deeper EU market access</li><li>Defense and aerospace exports surging past $5B annually</li><li>Automotive sector is Europe's 5th largest producer</li></ul></section><section class="slide slide-type-content slide-has-image"><span class="slide-number">9 / 13</span><div class="slide-body"><div class="slide-text"><h2>Demographics & Digital Transformation</h2><ul><li>Median age of 33 offers decades of workforce advantage</li><li>Tech startup ecosystem reached $15B+ in cumulative funding</li><li>E-commerce penetration doubling every three years</li><li>Government digitization accelerating public sector efficiency</li></ul></div><div class="slide-image"><img src="https://images.unsplash.com/photo-1734139889930-8e40c0e12ba7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5MTA5NDZ8MHwxfHNlYXJjaHwxfHxEZW1vZ3JhcGhpY3MlMjAlMjYlMjBEaWdpdGFsJTIwVHJhbnNmb3JtYXRpb258ZW58MHwwfHx8MTc3NDk3MDIyOHww&ixlib=rb-4.1.0&q=80&w=400" alt="Demographics & Digital Transformation"/></div></div></section><section class="slide slide-type-quote"><span class="slide-number">10 / 13</span><div class="quote-mark">&ldquo;</div><p class="quote-text">Türkiye's geography is its destiny — but its human capital, industrial depth, and entrepreneurial energy are its true competitive moats.</p><p class="attribution">&mdash; Senior Economist, EBRD Türkiye Country Assessment</p></section><section class="slide slide-type-section"><span class="slide-number">11 / 13</span><h2>Navigating Risks & Building Resilience</h2></section><section class="slide slide-type-content slide-has-image"><span class="slide-number">12 / 13</span><div class="slide-body"><div class="slide-text"><h2>Key Risks on the Horizon</h2><ul><li>Policy reversal risk if political pressures override orthodoxy</li><li>Geopolitical volatility across the Black Sea and Middle East</li><li>Energy import dependency exposes economy to commodity shocks</li><li>Institutional credibility requires years of consistent signaling</li><li>Lira stability hinges on sustained foreign capital inflows</li></ul></div><div class="slide-image"><img src="https://images.unsplash.com/photo-1758948378075-5bdccb8b2b9a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5MTA5NDZ8MHwxfHNlYXJjaHwxfHxLZXklMjBSaXNrcyUyMG9uJTIwdGhlJTIwSG9yaXpvbnxlbnwwfDB8fHwxNzc0OTcwMjM1fDA&ixlib=rb-4.1.0&q=80&w=400" alt="Key Risks on the Horizon"/></div></div></section><section class="slide slide-type-closing"><span class="slide-number">13 / 13</span><h2>The Path Forward: Strategic Imperatives</h2></section>
+</body>
+</html>

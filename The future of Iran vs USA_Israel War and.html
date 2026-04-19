@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Iran–US/Israel Conflict</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --slide-bg: #16213e;
+            --primary: #e94560;
+            --secondary: #0f3460;
+            --text: #eaeaea;
+            --muted: #a0a0b0;
+            --border: #0f3460;
+            --code-bg: #0d0d1a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; padding: 2rem 1rem;
+        }
+        h1, h2 { color: var(--primary); }
+        .deck-title {
+            text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.2rem;
+            border-bottom: 2px solid var(--border); width: 100%; max-width: 900px;
+        }
+        .deck-title h1 { font-size: 2.2rem; letter-spacing: -0.02em; }
+        .deck-title .subtitle { color: var(--muted); font-size: 1.1rem; margin-top: 0.5rem; }
+        .deck-title .meta { color: var(--muted); font-size: 0.82rem; margin-top: 0.6rem; }
+        .theme-badge {
+            display: inline-block; background: var(--secondary); color: var(--primary);
+            border-radius: 20px; padding: 0.2rem 0.9rem; font-size: 0.78rem;
+            font-weight: 600; letter-spacing: 0.05em; margin-top: 0.5rem;
+        }
+        /* Base slide */
+        .slide {
+            background: var(--slide-bg); border: 1px solid var(--border);
+            border-radius: 12px; width: 100%; max-width: 900px; min-height: 300px;
+            margin-bottom: 1.5rem; padding: 2.8rem 3.5rem;
+            display: flex; flex-direction: column; justify-content: center;
+            position: relative; box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+            border-left: 4px solid transparent;
+        }
+        .slide-number { position: absolute; top: 1rem; right: 1.5rem; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.05em; }
+        /* Title slide */
+        .slide-type-title {
+            border-left: 4px solid var(--primary);
+            min-height: 340px;
+        }
+        .slide-type-title h2 { font-size: 2.6rem; letter-spacing: -0.02em; margin-bottom: 0.8rem; line-height: 1.2; }
+        .slide-type-title .subtitle { color: var(--muted); font-size: 1.15rem; margin-top: 0.3rem; }
+        /* Section slide */
+        .slide-type-section {
+            background: var(--primary); border-color: var(--primary);
+            border-left: 4px solid rgba(0,0,0,0.15);
+        }
+        .slide-type-section h2 { color: var(--slide-bg); font-size: 2.2rem; letter-spacing: -0.01em; }
+        .slide-type-section .slide-number { color: rgba(255,255,255,0.5); }
+        /* Content slide */
+        .slide-type-content h2 {
+            font-size: 1.7rem; margin-bottom: 1.4rem; padding-bottom: 0.6rem;
+            border-bottom: 1px solid var(--border);
+        }
+        ul { list-style: none; padding: 0; }
+        ul li {
+            padding: 0.5rem 0 0.5rem 1.8rem; position: relative;
+            font-size: 1.08rem; line-height: 1.65;
+        }
+        ul li::before { content: '▸'; position: absolute; left: 0; color: var(--primary); font-size: 0.85em; top: 0.6rem; }
+        /* Quote slide */
+        .slide-type-quote { border-left: 4px solid var(--primary); }
+        .slide-type-quote .quote-mark { font-size: 5rem; color: var(--primary); line-height: 0.8; margin-bottom: 0.5rem; opacity: 0.6; }
+        .slide-type-quote .quote-text { font-size: 1.35rem; line-height: 1.7; font-style: italic; margin-bottom: 1.2rem; }
+        .slide-type-quote .attribution { color: var(--muted); font-size: 0.95rem; border-top: 1px solid var(--border); padding-top: 0.8rem; }
+        /* Stat slide */
+        .slide-type-stat { text-align: center; }
+        .slide-type-stat h2 { font-size: 1.2rem; color: var(--muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; }
+        .slide-type-stat .stat-number { font-size: 5.5rem; font-weight: 700; color: var(--primary); line-height: 1; margin-bottom: 0.6rem; letter-spacing: -0.03em; }
+        .slide-type-stat .stat-label { font-size: 1.2rem; color: var(--text); }
+        /* Closing slide */
+        .slide-type-closing {
+            text-align: center; border-top: 4px solid var(--primary);
+            border-left: none; border-radius: 12px;
+        }
+        .slide-type-closing h2 { font-size: 2.6rem; margin-bottom: 0.75rem; }
+        /* Image layout */
+        .slide-has-image .slide-body { display: flex; gap: 2rem; align-items: center; }
+        .slide-has-image .slide-text { flex: 1; }
+        .slide-has-image .slide-image { flex: 0 0 38%; }
+        .slide-has-image .slide-image img { width: 100%; border-radius: 8px; object-fit: cover; max-height: 220px; }
+    </style>
+</head>
+<body>
+    <div class="deck-title">
+        <h1>Iran–US/Israel Conflict</h1>
+        <p class="subtitle">Geopolitical Risk Assessment & Global Economic Impact Analysis</p>
+        <div class="meta">Generated on 2026-04-12 12:57 &bull;
+            <span class="theme-badge">Dark theme</span>
+        </div>
+    </div>
+    <section class="slide slide-type-title"><span class="slide-number">1 / 13</span><h2>Iran–US/Israel Conflict</h2><p class="subtitle">Geopolitical Risk Assessment & Global Economic Impact Analysis</p></section><section class="slide slide-type-stat"><span class="slide-number">2 / 13</span><h2>The Stakes Are Unprecedented</h2><div class="stat-number">$3.6T</div><div class="stat-label">Estimated global GDP at risk if the Strait of Hormuz is fully disrupted for 90 days</div></section><section class="slide slide-type-content slide-has-image"><span class="slide-number">3 / 13</span><div class="slide-body"><div class="slide-text"><h2>Presentation Agenda</h2><ul><li>Geopolitical landscape and escalation drivers</li><li>Military capabilities and conflict scenarios</li><li>Energy markets and supply chain disruption</li><li>Global financial market contagion effects</li><li>Strategic outlook and scenario planning</li></ul></div><div class="slide-image"><img src="https://images.unsplash.com/photo-1594304888440-48cd07c764cd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5MTA5NDZ8MHwxfHNlYXJjaHwxfHxQcmVzZW50YXRpb24lMjBBZ2VuZGF8ZW58MHwwfHx8MTc3NTk5ODY2M3ww&ixlib=rb-4.1.0&q=80&w=400" alt="Presentation Agenda"/></div></div></section><section class="slide slide-type-section"><span class="slide-number">4 / 13</span><h2>The Geopolitical Powder Keg</h2></section><section class="slide slide-type-content slide-has-image"><span class="slide-number">5 / 13</span><div class="slide-body"><div class="slide-text"><h2>Escalation Drivers: A Multi-Front Tension</h2><ul><li>Iran's accelerating nuclear enrichment beyond 60% purity</li><li>Proxy warfare expanding across Lebanon, Yemen, Iraq, Syria</li><li>US maximum pressure sanctions regime intensifying</li><li>Israel's doctrine of preemptive strikes remains active</li><li>Collapse of diplomatic back-channels since JCPOA withdrawal</li></ul></div><div class="slide-image"><img src="https://images.unsplash.com/photo-1763272502300-ede448cf6755?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5MTA5NDZ8MHwxfHNlYXJjaHwxfHxFc2NhbGF0aW9uJTIwRHJpdmVycyUzQSUyMEElMjBNdWx0aS1Gcm9udCUyMFRlbnNpb258ZW58MHwwfHx8MTc3NTk5ODY2M3ww&ixlib=rb-4.1.0&q=80&w=400" alt="Escalation Drivers: A Multi-Front Tension"/></div></div></section><section class="slide slide-type-content slide-has-image"><span class="slide-number">6 / 13</span><div class="slide-body"><div class="slide-text"><h2>Military Balance and Conflict Scenarios</h2><ul><li>Iran's asymmetric arsenal: drones, missiles, naval mines</li><li>US Central Command maintains 40,000+ regional troops</li><li>Israel's advanced missile defense and strike capabilities</li><li>Three scenarios: limited strikes, proxy escalation, full war</li><li>Cyber warfare as the likely first-strike domain</li></ul></div><div class="slide-image"><img src="https://images.unsplash.com/photo-1772303142787-1b09aca81c14?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5MTA5NDZ8MHwxfHNlYXJjaHwxfHxNaWxpdGFyeSUyMEJhbGFuY2UlMjBhbmQlMjBDb25mbGljdCUyMFNjZW5hcmlvc3xlbnwwfDB8fHwxNzc1OTk4NjY0fDA&ixlib=rb-4.1.0&q=80&w=400" alt="Military Balance and Conflict Scenarios"/></div></div></section><section class="slide slide-type-section"><span class="slide-number">7 / 13</span><h2>Economic Shockwaves: From Regional Conflict to Global Crisis</h2></section><section class="slide slide-type-stat"><span class="slide-number">8 / 13</span><h2>The Hormuz Chokepoint</h2><div class="stat-number">21%</div><div class="stat-label">Share of global oil supply transiting the Strait of Hormuz daily — roughly 21 million barrels</div></section><section class="slide slide-type-content"><span class="slide-number">9 / 13</span><h2>Energy Markets and Commodity Disruption</h2><ul><li>Oil prices could spike to $150–$250/barrel under full blockade</li><li>LNG exports from Qatar face simultaneous disruption risk</li><li>Food prices surge as energy-intensive agriculture costs rise</li><li>OPEC+ spare capacity insufficient to offset prolonged outage</li><li>Renewable energy transition accelerates under supply shock</li></ul></section><section class="slide slide-type-content slide-has-image"><span class="slide-number">10 / 13</span><div class="slide-body"><div class="slide-text"><h2>Global Financial Market Contagion</h2><ul><li>Equity markets face 15-25% drawdown in acute scenario</li><li>US dollar strengthens as global safe-haven demand surges</li><li>Emerging markets face capital flight and debt crises</li><li>Insurance and shipping costs spike across all trade lanes</li><li>Central banks forced into impossible inflation-growth tradeoff</li></ul></div><div class="slide-image"><img src="https://images.unsplash.com/photo-1768055104895-e6185762f2a9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5MTA5NDZ8MHwxfHNlYXJjaHwxfHxHbG9iYWwlMjBGaW5hbmNpYWwlMjBNYXJrZXQlMjBDb250YWdpb258ZW58MHwwfHx8MTc3NTk5ODY2Nnww&ixlib=rb-4.1.0&q=80&w=400" alt="Global Financial Market Contagion"/></div></div></section><section class="slide slide-type-section"><span class="slide-number">11 / 13</span><h2>Strategic Outlook: Preparing for Uncertainty</h2></section><section class="slide slide-type-content slide-has-image"><span class="slide-number">12 / 13</span><div class="slide-body"><div class="slide-text"><h2>Three Scenarios for Decision-Makers</h2><ul><li>Base case: Sustained tension, no direct war — oil at $90-110</li><li>Escalation case: Limited strikes, proxy expansion — oil at $130-180</li><li>Crisis case: Full regional conflict — oil above $200, global recession</li><li>Portfolio hedging and supply chain diversification are critical</li><li>Diplomatic de-escalation remains the highest-ROI outcome</li></ul></div><div class="slide-image"><img src="https://images.unsplash.com/photo-1716840646010-e5622fd6683d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5MTA5NDZ8MHwxfHNlYXJjaHwxfHxUaHJlZSUyMFNjZW5hcmlvcyUyMGZvciUyMERlY2lzaW9uLU1ha2Vyc3xlbnwwfDB8fHwxNzc1OTk4NjY2fDA&ixlib=rb-4.1.0&q=80&w=400" alt="Three Scenarios for Decision-Makers"/></div></div></section><section class="slide slide-type-closing"><span class="slide-number">13 / 13</span><h2>The Cost of Conflict</h2></section>
+</body>
+</html>
