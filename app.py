@@ -9,8 +9,8 @@ Deploy:
 """
 
 import io
-import tempfile
 import os
+import tempfile
 
 import streamlit as st
 
@@ -23,11 +23,15 @@ from generate import (
     THEMES,
     DEFAULT_THEME,
     TOPIC_MAX_LENGTH,
+    SLIDES_MIN,
+    SLIDES_MAX,
+    SLIDES_DEFAULT,
     UNSPLASH_ACCESS_KEY,
     generate_content,
     fetch_slide_images,
     build_pptx,
     build_html,
+    ingest_pptx,
     validate_topic,
 )
 
@@ -71,12 +75,42 @@ with col2:
         format_func=lambda f: "PowerPoint (.pptx)" if f == "pptx" else "HTML (.html)",
     )
 
-use_images = st.checkbox(
-    "Embed Unsplash photos",
-    value=False,
-    disabled=not UNSPLASH_ACCESS_KEY,
-    help="Adds a relevant photo to each content slide. Requires UNSPLASH_ACCESS_KEY."
-         if not UNSPLASH_ACCESS_KEY else "Fetches one photo per content slide from Unsplash.",
+slide_count = st.slider(
+    "Number of slides",
+    min_value=SLIDES_MIN,
+    max_value=SLIDES_MAX,
+    value=SLIDES_DEFAULT,
+    step=1,
+)
+
+col3, col4 = st.columns(2)
+
+with col3:
+    use_images = st.checkbox(
+        "Embed Unsplash photos",
+        value=False,
+        disabled=not UNSPLASH_ACCESS_KEY,
+        help=(
+            "Adds a relevant photo to each content slide. Requires UNSPLASH_ACCESS_KEY."
+            if not UNSPLASH_ACCESS_KEY
+            else "Fetches one photo per content slide from Unsplash."
+        ),
+    )
+
+with col4:
+    include_notes = st.checkbox(
+        "Include speaker notes",
+        value=True,
+        help="Uncheck to omit speaker notes from the output file.",
+    )
+
+remix_file = st.file_uploader(
+    "Remix an existing deck (optional)",
+    type=["pptx"],
+    help=(
+        "Upload a .pptx file — MarkItDown extracts the content and Claude uses it "
+        "as source material to build an improved version."
+    ),
 )
 
 # ---------------------------------------------------------------------------
@@ -89,17 +123,44 @@ if st.button("Generate Presentation", type="primary", use_container_width=True):
     else:
         try:
             topic = validate_topic(topic_input)
-        except SystemExit:
-            st.error(f"Topic must be between 1 and {TOPIC_MAX_LENGTH} characters.")
+        except ValueError as e:
+            st.error(str(e))
             st.stop()
+
+        # Ingest the remix file if provided
+        reference_markdown = ""
+        if remix_file is not None:
+            with st.spinner(f"Ingesting reference deck: {remix_file.name}…"):
+                try:
+                    with tempfile.NamedTemporaryFile(suffix=".pptx", delete=False) as tmp:
+                        tmp.write(remix_file.read())
+                        tmp_path = tmp.name
+                    reference_markdown = ingest_pptx(tmp_path)
+                except Exception as e:
+                    st.error(f"Failed to read reference deck: {e}")
+                    st.stop()
+                finally:
+                    try:
+                        os.unlink(tmp_path)
+                    except Exception:
+                        pass
 
         theme = THEMES[theme_choice]
         safe = "".join(c if c.isalnum() or c in " _-" else "_" for c in topic)[:40].strip()
         filename = f"{safe}.{format_choice}"
 
-        with st.spinner(f"Generating **{topic}**…"):
+        spinner_msg = (
+            f"Remixing **{remix_file.name}** into **{topic}**…"
+            if reference_markdown
+            else f"Generating **{topic}**…"
+        )
+        with st.spinner(spinner_msg):
             try:
-                data = generate_content(topic)
+                data = generate_content(
+                    topic,
+                    reference_markdown=reference_markdown,
+                    slide_count=slide_count,
+                )
             except Exception as e:
                 st.error(f"Failed to generate content: {e}")
                 st.stop()
@@ -109,25 +170,26 @@ if st.button("Generate Presentation", type="primary", use_container_width=True):
             with st.spinner("Fetching Unsplash images…"):
                 images = fetch_slide_images(data["slides"])
 
-        st.success(f"Generated {len(data['slides'])} slides with the **{THEMES[theme_choice]['name']}** theme.")
+        st.success(
+            f"Generated {len(data['slides'])} slides with the **{THEMES[theme_choice]['name']}** theme."
+        )
 
         # Build the output file in memory
         if format_choice == "pptx":
             with tempfile.NamedTemporaryFile(suffix=".pptx", delete=False) as f:
                 tmp_path = f.name
             try:
-                build_pptx(data, theme, tmp_path, images)
+                build_pptx(data, theme, tmp_path, images, include_notes=include_notes)
                 with open(tmp_path, "rb") as f:
                     file_bytes = f.read()
             finally:
                 os.unlink(tmp_path)
             mime = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
         else:
-            buf = io.StringIO()
             with tempfile.NamedTemporaryFile(suffix=".html", delete=False, mode="w", encoding="utf-8") as f:
                 tmp_path = f.name
             try:
-                build_html(data, theme, tmp_path, images)
+                build_html(data, theme, tmp_path, images, include_notes=include_notes)
                 with open(tmp_path, "r", encoding="utf-8") as f:
                     file_bytes = f.read().encode("utf-8")
             finally:
@@ -186,3 +248,9 @@ with st.sidebar:
     }
     for key, t in THEMES.items():
         st.markdown(f"- `{key}` — {descriptions.get(key, t['name'])}")
+    st.divider()
+    st.markdown("**Remix**")
+    st.markdown(
+        "Upload any `.pptx` file to use as a reference. "
+        "MarkItDown extracts the content; Claude rebuilds it as a polished deck."
+    )

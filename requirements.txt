@@ -1,4 +1,5 @@
 anthropic==0.84.0
+markitdown[pptx]==0.1.5
 python-pptx==1.0.2
 requests==2.32.5
 streamlit==1.55.0

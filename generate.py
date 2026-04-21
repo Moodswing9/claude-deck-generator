@@ -6,13 +6,17 @@ Uses Claude to generate slide content from a topic, then outputs a styled
 
 Usage:
     python generate.py "Your Topic" [--theme THEME] [--format FORMAT] [--output FILE]
-    python generate.py "Your Topic" --images   # embed Unsplash photos
+    python generate.py "Your Topic" --images            # embed Unsplash photos
+    python generate.py "Your Topic" --remix old.pptx   # remix an existing deck
+    python generate.py "Your Topic" --slides 8         # control slide count
+    python generate.py "Your Topic" --no-notes         # omit speaker notes
 
 Themes:  dark (default), light, corporate, executive
 Formats: pptx (default), html
 """
 
 import argparse
+import html
 import io
 import json
 import os
@@ -110,6 +114,9 @@ THEMES = {
 DEFAULT_THEME = "dark"
 
 TOPIC_MAX_LENGTH = 200
+SLIDES_MIN = 4
+SLIDES_MAX = 20
+SLIDES_DEFAULT = 12
 
 # ---------------------------------------------------------------------------
 # Input validation
@@ -119,11 +126,11 @@ def validate_topic(topic: str) -> str:
     """Validate and sanitize the presentation topic."""
     topic = topic.strip()
     if not topic:
-        print("Error: topic required")
-        sys.exit(1)
+        raise ValueError("Topic is required.")
     if len(topic) > TOPIC_MAX_LENGTH:
-        print(f"Error: topic must be {TOPIC_MAX_LENGTH} characters or fewer (got {len(topic)})")
-        sys.exit(1)
+        raise ValueError(
+            f"Topic must be {TOPIC_MAX_LENGTH} characters or fewer (got {len(topic)})."
+        )
     return topic
 
 
@@ -132,8 +139,7 @@ def validate_output_path(path: str, fmt: str) -> str:
     cwd = pathlib.Path.cwd().resolve()
     resolved = (cwd / path).resolve()
     if not str(resolved).startswith(str(cwd)):
-        print(f"Error: output path '{path}' is outside the current directory")
-        sys.exit(1)
+        raise ValueError(f"Output path '{path}' is outside the current directory.")
     if not resolved.suffix:
         resolved = resolved.with_suffix(f".{fmt}")
     return str(resolved)
@@ -205,6 +211,31 @@ def _download_image(url: str) -> io.BytesIO | None:
 
 
 # ---------------------------------------------------------------------------
+# MarkItDown — ingest existing PPTX as Markdown context
+# ---------------------------------------------------------------------------
+
+def ingest_pptx(source: str) -> str:
+    """
+    Convert an existing PPTX file to Markdown using MarkItDown.
+
+    Parameters:
+    - source: Path to the .pptx file to ingest.
+
+    Returns:
+    - Markdown string extracted from the presentation.
+    """
+    try:
+        from markitdown import MarkItDown
+    except ImportError:
+        raise ImportError(
+            "markitdown is required for the remix feature. "
+            "Install it with: pip install 'markitdown[pptx]'"
+        )
+    result = MarkItDown().convert(source)
+    return result.markdown
+
+
+# ---------------------------------------------------------------------------
 # Claude API — generate slide content
 # ---------------------------------------------------------------------------
 
@@ -240,10 +271,45 @@ SLIDE_SCHEMA = {
 }
 
 
-def generate_content(topic: str) -> dict:
+def generate_content(
+    topic: str,
+    *,
+    reference_markdown: str = "",
+    slide_count: int = SLIDES_DEFAULT,
+) -> dict:
+    """
+    Call Claude to generate structured slide content.
+
+    Parameters:
+    - topic: The presentation subject.
+    - reference_markdown: Optional Markdown from an existing PPTX (via ingest_pptx).
+                          When provided, Claude uses it as source material to remix.
+    - slide_count: Target number of slides (clamped to SLIDES_MIN–SLIDES_MAX).
+    """
     _check_rate_limit()
+    slide_count = max(SLIDES_MIN, min(SLIDES_MAX, slide_count))
     client = anthropic.Anthropic()
-    print(f"Generating content for: {topic}")
+
+    if reference_markdown:
+        print(f"Remixing existing deck into {slide_count} slides about: {topic}")
+        user_message = (
+            f"Here is an existing presentation for reference:\n\n"
+            f"<reference_deck>\n{reference_markdown}\n</reference_deck>\n\n"
+            f"Using the above as source material, create an improved, professional "
+            f"{slide_count}-slide presentation about: {topic}\n\n"
+            "Preserve strong points from the reference, sharpen the language, improve "
+            "narrative structure, and ensure every slide earns its place. "
+            "Structure: opening hook (stat or quote), agenda, 2-3 major sections each "
+            "preceded by a section slide, supporting content slides, and a strong closing."
+        )
+    else:
+        print(f"Generating {slide_count}-slide presentation about: {topic}")
+        user_message = (
+            f"Create a professional {slide_count}-slide presentation about: {topic}\n\n"
+            "Structure: opening hook (stat or quote), agenda, 2-3 major sections each "
+            "preceded by a section slide, supporting content slides, and a strong closing."
+        )
+
     response = client.messages.create(
         model="claude-opus-4-6",
         max_tokens=6000,
@@ -262,14 +328,7 @@ def generate_content(topic: str) -> dict:
             "Use a mix of types. Every 2-3 content slides, insert a section, quote, or stat "
             "slide to maintain visual rhythm. Avoid filler — every slide must earn its place."
         ),
-        messages=[{
-            "role": "user",
-            "content": (
-                f"Create a professional 10-12 slide presentation about: {topic}\n\n"
-                "Structure: opening hook (stat or quote), agenda, 2-3 major sections each "
-                "preceded by a section slide, supporting content slides, and a strong closing."
-            ),
-        }],
+        messages=[{"role": "user", "content": user_message}],
         output_config={
             "format": {"type": "json_schema", "schema": SLIDE_SCHEMA}
         },
@@ -323,7 +382,8 @@ def _pptx_title_slide(prs, title, subtitle, theme):
                   size=20, color=theme["subtext"], align=PP_ALIGN.LEFT)
 
 
-def _pptx_content_slide(prs, title, bullets, notes, theme, image_stream=None):
+def _pptx_content_slide(prs, title, bullets, notes, theme, image_stream=None,
+                         include_notes: bool = True):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _pptx_set_bg(slide, theme["bg"])
 
@@ -357,21 +417,21 @@ def _pptx_content_slide(prs, title, bullets, notes, theme, image_stream=None):
     if image_stream:
         slide.shapes.add_picture(image_stream, Inches(6.4), Inches(1.2), Inches(3.2), Inches(3.8))
 
-    if notes:
+    if include_notes and notes:
         slide.notes_slide.notes_text_frame.text = notes
 
 
-def _pptx_section_slide(prs, title, notes, theme):
+def _pptx_section_slide(prs, title, notes, theme, include_notes: bool = True):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _pptx_set_bg(slide, theme["accent"])
     # Full-bleed accent background, white title
     _pptx_textbox(slide, title, 0.8, 1.8, 8.4, 2.0, size=38, bold=True,
                   color=theme["bg"], align=PP_ALIGN.LEFT)
-    if notes:
+    if include_notes and notes:
         slide.notes_slide.notes_text_frame.text = notes
 
 
-def _pptx_quote_slide(prs, title, quote, attribution, notes, theme):
+def _pptx_quote_slide(prs, title, quote, attribution, notes, theme, include_notes: bool = True):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _pptx_set_bg(slide, theme["bg"])
 
@@ -393,11 +453,11 @@ def _pptx_quote_slide(prs, title, quote, attribution, notes, theme):
     line.fill.fore_color.rgb = theme["accent"]
     line.line.fill.background()
 
-    if notes:
+    if include_notes and notes:
         slide.notes_slide.notes_text_frame.text = notes
 
 
-def _pptx_stat_slide(prs, title, stat, stat_label, notes, theme):
+def _pptx_stat_slide(prs, title, stat, stat_label, notes, theme, include_notes: bool = True):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _pptx_set_bg(slide, theme["bg"])
 
@@ -415,11 +475,12 @@ def _pptx_stat_slide(prs, title, stat, stat_label, notes, theme):
     _pptx_textbox(slide, stat_label or "", 0.5, 3.7, 9.0, 0.8, size=20,
                   color=theme["text"], align=PP_ALIGN.CENTER)
 
-    if notes:
+    if include_notes and notes:
         slide.notes_slide.notes_text_frame.text = notes
 
 
-def build_pptx(data: dict, theme: dict, output_path: str, images: dict = None):
+def build_pptx(data: dict, theme: dict, output_path: str, images: dict = None,
+               include_notes: bool = True):
     images = images or {}
     prs = Presentation()
     prs.slide_width = Inches(10)
@@ -429,16 +490,17 @@ def build_pptx(data: dict, theme: dict, output_path: str, images: dict = None):
         stype = s.get("type", "content")
         notes = s.get("notes", "")
         if stype == "section":
-            _pptx_section_slide(prs, s["title"], notes, theme)
+            _pptx_section_slide(prs, s["title"], notes, theme, include_notes=include_notes)
         elif stype == "quote":
             _pptx_quote_slide(prs, s["title"], s.get("quote", ""),
-                              s.get("attribution", ""), notes, theme)
+                              s.get("attribution", ""), notes, theme, include_notes=include_notes)
         elif stype == "stat":
             _pptx_stat_slide(prs, s["title"], s.get("stat", ""),
-                             s.get("stat_label", ""), notes, theme)
+                             s.get("stat_label", ""), notes, theme, include_notes=include_notes)
         else:
             image_stream = _download_image(images[s["title"]]) if s["title"] in images else None
-            _pptx_content_slide(prs, s["title"], s["bullets"], notes, theme, image_stream)
+            _pptx_content_slide(prs, s["title"], s["bullets"], notes, theme, image_stream,
+                                include_notes=include_notes)
     prs.save(output_path)
 
 
@@ -539,14 +601,14 @@ def _css(theme: dict) -> str:
 
 
 def _slide_html(slide: dict, index: int, total: int) -> str:
-    title = slide.get("title", "")
+    title = html.escape(slide.get("title", ""))
     bullets = slide.get("bullets", [])
     stype = slide.get("type", "content")
     num = f'<span class="slide-number">{index} / {total}</span>'
-    items = "".join(f"<li>{b}</li>" for b in bullets)
+    items = "".join(f"<li>{html.escape(b)}</li>" for b in bullets)
 
     if index == 1:  # title slide
-        subtitle = slide.get("subtitle", "")
+        subtitle = html.escape(slide.get("subtitle", ""))
         sub = f'<p class="subtitle">{subtitle}</p>' if subtitle else ""
         return (f'<section class="slide slide-type-title">{num}'
                 f'<h2>{title}</h2>{sub}</section>')
@@ -560,16 +622,16 @@ def _slide_html(slide: dict, index: int, total: int) -> str:
                 f'<h2>{title}</h2></section>')
 
     if stype == "quote":
-        quote = slide.get("quote", title)
-        attr = slide.get("attribution", "")
+        quote = html.escape(slide.get("quote", slide.get("title", "")))
+        attr = html.escape(slide.get("attribution", ""))
         attr_html = f'<p class="attribution">&mdash; {attr}</p>' if attr else ""
         return (f'<section class="slide slide-type-quote">{num}'
                 f'<div class="quote-mark">&ldquo;</div>'
                 f'<p class="quote-text">{quote}</p>{attr_html}</section>')
 
     if stype == "stat":
-        stat = slide.get("stat", "")
-        label = slide.get("stat_label", "")
+        stat = html.escape(slide.get("stat", ""))
+        label = html.escape(slide.get("stat_label", ""))
         return (f'<section class="slide slide-type-stat">{num}'
                 f'<h2>{title}</h2>'
                 f'<div class="stat-number">{stat}</div>'
@@ -577,16 +639,18 @@ def _slide_html(slide: dict, index: int, total: int) -> str:
 
     image_url = slide.get("image_url", "")
     if image_url:
+        safe_url = html.escape(image_url, quote=True)
         return (f'<section class="slide slide-type-content slide-has-image">{num}'
                 f'<div class="slide-body">'
                 f'<div class="slide-text"><h2>{title}</h2><ul>{items}</ul></div>'
-                f'<div class="slide-image"><img src="{image_url}" alt="{title}"/></div>'
+                f'<div class="slide-image"><img src="{safe_url}" alt="{title}"/></div>'
                 f'</div></section>')
     return (f'<section class="slide slide-type-content">{num}'
             f'<h2>{title}</h2><ul>{items}</ul></section>')
 
 
-def build_html(data: dict, theme: dict, output_path: str, images: dict = None):
+def build_html(data: dict, theme: dict, output_path: str, images: dict = None,
+               include_notes: bool = True):
     images = images or {}
     content_slides = [
         {**s, "image_url": images.get(s["title"], "")} for s in data["slides"]
@@ -596,18 +660,20 @@ def build_html(data: dict, theme: dict, output_path: str, images: dict = None):
     total = len(slides)
     slides_html = "".join(_slide_html(s, i + 1, total) for i, s in enumerate(slides))
     generated_at = datetime.now().strftime("%Y-%m-%d %H:%M")
-    html = f"""<!DOCTYPE html>
+    deck_title = html.escape(data["title"])
+    deck_subtitle = html.escape(data.get("subtitle", ""))
+    output_html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>{data['title']}</title>
+    <title>{deck_title}</title>
     <style>{_css(theme)}</style>
 </head>
 <body>
     <div class="deck-title">
-        <h1>{data['title']}</h1>
-        {f'<p class="subtitle">{data["subtitle"]}</p>' if data.get("subtitle") else ""}
+        <h1>{deck_title}</h1>
+        {f'<p class="subtitle">{deck_subtitle}</p>' if deck_subtitle else ""}
         <div class="meta">Generated on {generated_at} &bull;
             <span class="theme-badge">{theme['name']} theme</span>
         </div>
@@ -616,7 +682,7 @@ def build_html(data: dict, theme: dict, output_path: str, images: dict = None):
 </body>
 </html>"""
     with open(output_path, "w", encoding="utf-8") as f:
-        f.write(html)
+        f.write(output_html)
 
 
 # ---------------------------------------------------------------------------
@@ -638,6 +704,12 @@ def main():
                         help="List available themes and exit")
     parser.add_argument("--images", action="store_true",
                         help="Embed Unsplash photos (requires UNSPLASH_ACCESS_KEY)")
+    parser.add_argument("--remix", metavar="FILE", default=None,
+                        help="Path to an existing .pptx — MarkItDown extracts it, Claude rebuilds it")
+    parser.add_argument("--slides", type=int, default=SLIDES_DEFAULT, metavar="N",
+                        help=f"Target slide count ({SLIDES_MIN}–{SLIDES_MAX}, default: {SLIDES_DEFAULT})")
+    parser.add_argument("--no-notes", action="store_true",
+                        help="Omit speaker notes from the output")
     args = parser.parse_args()
 
     if args.list_themes:
@@ -646,10 +718,30 @@ def main():
             print(f"  {key:<12} {t['name']}{marker}")
         return
 
-    topic = validate_topic(args.topic or input("Enter presentation topic: ").strip())
+    try:
+        topic = validate_topic(args.topic or input("Enter presentation topic: ").strip())
+    except ValueError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+    reference_markdown = ""
+    if args.remix:
+        if not args.remix.lower().endswith(".pptx"):
+            print("Error: --remix requires a .pptx file.")
+            sys.exit(1)
+        print(f"Ingesting reference deck: {args.remix}")
+        try:
+            reference_markdown = ingest_pptx(args.remix)
+        except (FileNotFoundError, ImportError) as e:
+            print(f"Error: {e}")
+            sys.exit(1)
 
     theme = THEMES[args.theme]
-    data = generate_content(topic)
+    data = generate_content(
+        topic,
+        reference_markdown=reference_markdown,
+        slide_count=args.slides,
+    )
 
     images = {}
     if args.images:
@@ -659,14 +751,21 @@ def main():
 
     safe = "".join(c if c.isalnum() or c in " _-" else "_" for c in topic)[:40].strip()
     raw_output = args.output or f"{safe}.{args.format}"
-    output = validate_output_path(raw_output, args.format)
+    try:
+        output = validate_output_path(raw_output, args.format)
+    except ValueError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
 
+    include_notes = not args.no_notes
     if args.format == "pptx":
-        build_pptx(data, theme, output, images)
+        build_pptx(data, theme, output, images, include_notes=include_notes)
     else:
-        build_html(data, theme, output, images)
+        build_html(data, theme, output, images, include_notes=include_notes)
 
-    print(f"Saved: {output}  ({len(data['slides'])} slides, {args.theme} theme)")
+    notes_note = " (no speaker notes)" if not include_notes else ""
+    remix_note = f" [remixed from {args.remix}]" if args.remix else ""
+    print(f"Saved: {output}  ({len(data['slides'])} slides, {args.theme} theme{notes_note}{remix_note})")
 
 
 if __name__ == "__main__":

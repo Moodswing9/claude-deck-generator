@@ -11,7 +11,10 @@ pip install -r requirements.txt
 # Run the generator
 python generate.py "Your Topic"
 python generate.py "Your Topic" --theme corporate --format html
-python generate.py "Your Topic" --images          # embed Unsplash photos
+python generate.py "Your Topic" --images             # embed Unsplash photos
+python generate.py "Your Topic" --remix old.pptx    # remix an existing deck via MarkItDown
+python generate.py "Your Topic" --slides 8          # control slide count (4–20, default 12)
+python generate.py "Your Topic" --no-notes          # omit speaker notes
 python generate.py --list-themes
 
 # Required environment variable
@@ -33,7 +36,9 @@ The core generation lives in `generate.py`, which is also imported by `app.py` (
 
 Adding a new theme means adding one dict entry with both sets of keys.
 
-**`generate_content()`** calls `claude-opus-4-6` with `thinking: {type: "adaptive"}` and `output_config.format` set to `SLIDE_SCHEMA` (a JSON schema). The response is guaranteed to be valid JSON matching the schema — parse the first `text` block directly with `json.loads()`.
+**`generate_content(topic, *, reference_markdown="", slide_count=12)`** calls `claude-opus-4-6` with `thinking: {type: "adaptive"}` and `output_config.format` set to `SLIDE_SCHEMA`. When `reference_markdown` is supplied (from `ingest_pptx()`), it is injected into the user message inside `<reference_deck>` tags and Claude rebuilds the deck from that material. `slide_count` is clamped to 4–20.
+
+**`ingest_pptx(path)`** uses MarkItDown to convert an existing `.pptx` file into Markdown, extracting slide titles, text, tables, charts, and speaker notes. The result is passed as `reference_markdown` to `generate_content()`.
 
 **`SLIDE_SCHEMA`** defines the structure Claude must return: `{title, subtitle, slides: [{type, title, bullets[], notes, quote?, attribution?, stat?, stat_label?}]}`. Slide types: `content`, `section`, `quote`, `stat`. The HTML builder prepends a title slide from `data["title"]`; the pptx builder calls `_pptx_title_slide()` separately.
 

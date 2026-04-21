@@ -21,6 +21,9 @@ from generate import (
     THEMES,
     DEFAULT_THEME,
     TOPIC_MAX_LENGTH,
+    SLIDES_MIN,
+    SLIDES_MAX,
+    SLIDES_DEFAULT,
     SLIDE_SCHEMA,
     _css,
     _slide_html,
@@ -29,6 +32,7 @@ from generate import (
     build_pptx,
     build_html,
     generate_content,
+    ingest_pptx,
     validate_topic,
     validate_output_path,
     _check_rate_limit,
@@ -418,12 +422,12 @@ class TestValidateTopic(unittest.TestCase):
     def test_strips_whitespace(self):
         self.assertEqual(validate_topic("  AI  "), "AI")
 
-    def test_empty_topic_exits(self):
-        with self.assertRaises(SystemExit):
+    def test_empty_topic_raises(self):
+        with self.assertRaises(ValueError):
             validate_topic("")
 
-    def test_whitespace_only_exits(self):
-        with self.assertRaises(SystemExit):
+    def test_whitespace_only_raises(self):
+        with self.assertRaises(ValueError):
             validate_topic("   ")
 
     def test_topic_at_max_length_passes(self):
@@ -431,8 +435,8 @@ class TestValidateTopic(unittest.TestCase):
         result = validate_topic(topic)
         self.assertEqual(result, topic)
 
-    def test_topic_over_max_length_exits(self):
-        with self.assertRaises(SystemExit):
+    def test_topic_over_max_length_raises(self):
+        with self.assertRaises(ValueError):
             validate_topic("A" * (TOPIC_MAX_LENGTH + 1))
 
 
@@ -447,11 +451,11 @@ class TestValidateOutputPath(unittest.TestCase):
         self.assertTrue(result.endswith("output.pptx"))
 
     def test_path_traversal_rejected(self):
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(ValueError):
             validate_output_path("../../evil.pptx", "pptx")
 
     def test_absolute_path_outside_cwd_rejected(self):
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(ValueError):
             validate_output_path("/tmp/evil.pptx", "pptx")
 
     def test_extension_added_if_missing(self):
@@ -590,6 +594,189 @@ class TestFetchSlideImages(unittest.TestCase):
                 self.assertNotIn("Renewable Energy", result)
         finally:
             g.UNSPLASH_ACCESS_KEY = original
+
+
+# ---------------------------------------------------------------------------
+# Slide count constants tests
+# ---------------------------------------------------------------------------
+
+class TestSlideCountConstants(unittest.TestCase):
+
+    def test_defaults_are_sane(self):
+        self.assertGreater(SLIDES_DEFAULT, SLIDES_MIN)
+        self.assertLess(SLIDES_DEFAULT, SLIDES_MAX)
+
+    def test_min_less_than_max(self):
+        self.assertLess(SLIDES_MIN, SLIDES_MAX)
+
+
+# ---------------------------------------------------------------------------
+# generate_content — slide_count and reference_markdown tests
+# ---------------------------------------------------------------------------
+
+class TestGenerateContentExtended(unittest.TestCase):
+
+    def _make_mock_response(self, data: dict):
+        text_block = MagicMock()
+        text_block.type = "text"
+        text_block.text = json.dumps(data)
+        response = MagicMock()
+        response.content = [text_block]
+        return response
+
+    @patch("generate.anthropic.Anthropic")
+    def test_slide_count_in_prompt(self, mock_anthropic_cls):
+        mock_client = MagicMock()
+        mock_anthropic_cls.return_value = mock_client
+        mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+
+        generate_content("Some Topic", slide_count=8)
+        call_kwargs = mock_client.messages.create.call_args[1]
+        user_message = call_kwargs["messages"][0]["content"]
+        self.assertIn("8", user_message)
+
+    @patch("generate.anthropic.Anthropic")
+    def test_slide_count_clamped_to_min(self, mock_anthropic_cls):
+        mock_client = MagicMock()
+        mock_anthropic_cls.return_value = mock_client
+        mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+
+        generate_content("Some Topic", slide_count=1)  # below SLIDES_MIN
+        call_kwargs = mock_client.messages.create.call_args[1]
+        user_message = call_kwargs["messages"][0]["content"]
+        self.assertIn(str(SLIDES_MIN), user_message)
+
+    @patch("generate.anthropic.Anthropic")
+    def test_slide_count_clamped_to_max(self, mock_anthropic_cls):
+        mock_client = MagicMock()
+        mock_anthropic_cls.return_value = mock_client
+        mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+
+        generate_content("Some Topic", slide_count=999)  # above SLIDES_MAX
+        call_kwargs = mock_client.messages.create.call_args[1]
+        user_message = call_kwargs["messages"][0]["content"]
+        self.assertIn(str(SLIDES_MAX), user_message)
+
+    @patch("generate.anthropic.Anthropic")
+    def test_reference_markdown_included_in_prompt(self, mock_anthropic_cls):
+        mock_client = MagicMock()
+        mock_anthropic_cls.return_value = mock_client
+        mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+
+        generate_content("New Topic", reference_markdown="# Old Slide\nSome content")
+        call_kwargs = mock_client.messages.create.call_args[1]
+        user_message = call_kwargs["messages"][0]["content"]
+        self.assertIn("<reference_deck>", user_message)
+        self.assertIn("Old Slide", user_message)
+
+    @patch("generate.anthropic.Anthropic")
+    def test_no_reference_deck_tag_when_empty(self, mock_anthropic_cls):
+        mock_client = MagicMock()
+        mock_anthropic_cls.return_value = mock_client
+        mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+
+        generate_content("Topic")
+        call_kwargs = mock_client.messages.create.call_args[1]
+        user_message = call_kwargs["messages"][0]["content"]
+        self.assertNotIn("<reference_deck>", user_message)
+
+
+# ---------------------------------------------------------------------------
+# ingest_pptx tests
+# ---------------------------------------------------------------------------
+
+class TestIngestPptx(unittest.TestCase):
+
+    def test_ingest_produces_markdown_from_pptx(self):
+        """Build a minimal PPTX in memory and verify ingest_pptx returns Markdown."""
+        from pptx import Presentation as PPTXPresentation
+        from pptx.util import Inches
+
+        prs = PPTXPresentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        txBox = slide.shapes.add_textbox(Inches(1), Inches(1), Inches(4), Inches(1))
+        txBox.text_frame.text = "Hello from test slide"
+
+        with tempfile.NamedTemporaryFile(suffix=".pptx", delete=False) as f:
+            prs.save(f.name)
+            tmp_path = f.name
+
+        try:
+            result = ingest_pptx(tmp_path)
+            self.assertIsInstance(result, str)
+            self.assertGreater(len(result), 0)
+            self.assertIn("Hello from test slide", result)
+        finally:
+            os.unlink(tmp_path)
+
+    def test_ingest_nonexistent_file_raises(self):
+        with self.assertRaises(Exception):
+            ingest_pptx("/nonexistent/path/deck.pptx")
+
+
+# ---------------------------------------------------------------------------
+# HTML escaping tests
+# ---------------------------------------------------------------------------
+
+class TestHtmlEscaping(unittest.TestCase):
+
+    def test_title_with_html_is_escaped(self):
+        slide = {"type": "content", "title": "<script>alert(1)</script>", "bullets": []}
+        html_out = _slide_html(slide, 2, 5)
+        self.assertNotIn("<script>", html_out)
+        self.assertIn("&lt;script&gt;", html_out)
+
+    def test_bullet_with_html_is_escaped(self):
+        slide = {"type": "content", "title": "Title", "bullets": ['<b>bold</b>']}
+        html_out = _slide_html(slide, 2, 5)
+        self.assertNotIn("<b>", html_out)
+        self.assertIn("&lt;b&gt;", html_out)
+
+    def test_quote_text_is_escaped(self):
+        slide = {
+            "type": "quote", "title": "Q", "bullets": [],
+            "quote": '<script>bad</script>', "attribution": "Author",
+        }
+        html_out = _slide_html(slide, 2, 5)
+        self.assertNotIn("<script>", html_out)
+        self.assertIn("&lt;script&gt;", html_out)
+
+    def test_stat_is_escaped(self):
+        slide = {
+            "type": "stat", "title": "Metric", "bullets": [],
+            "stat": "<b>$1M</b>", "stat_label": "revenue",
+        }
+        html_out = _slide_html(slide, 2, 5)
+        self.assertNotIn("<b>", html_out)
+
+
+# ---------------------------------------------------------------------------
+# include_notes tests
+# ---------------------------------------------------------------------------
+
+class TestIncludeNotes(unittest.TestCase):
+
+    def _build_pptx_with_notes(self, include_notes: bool):
+        from pptx import Presentation as PPTXPresentation
+        theme = THEMES["dark"]
+        with tempfile.NamedTemporaryFile(suffix=".pptx", delete=False) as f:
+            path = f.name
+        try:
+            build_pptx(SAMPLE_DATA, theme, path, include_notes=include_notes)
+            prs = PPTXPresentation(path)
+            return prs
+        finally:
+            os.unlink(path)
+
+    def test_notes_present_when_enabled(self):
+        prs = self._build_pptx_with_notes(include_notes=True)
+        notes = prs.slides[1].notes_slide.notes_text_frame.text
+        self.assertEqual(notes, "Intro notes")
+
+    def test_notes_absent_when_disabled(self):
+        prs = self._build_pptx_with_notes(include_notes=False)
+        notes = prs.slides[1].notes_slide.notes_text_frame.text
+        self.assertEqual(notes, "")
 
 
 if __name__ == "__main__":
