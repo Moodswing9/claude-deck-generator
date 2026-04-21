@@ -81,7 +81,7 @@ Don't cite a formatting percentage stat — it's unverifiable and a skeptic will
 
 **Speaker note:**
 If they push on vendor lock-in: the JSON schema output is portable.
-Point `--slides` at any JSON file from any source. Swap the model in one line of code.
+Use `--remix` with any existing `.pptx` — MarkItDown extracts the content, Claude rebuilds it. Swap the model in one line of code.
 
 ---
 
@@ -90,7 +90,7 @@ Point `--slides` at any JSON file from any source. Swap the model in one line of
 **Headline:** "Then you give it the knowledge. It handles everything else."
 
 **Bullets:**
-- Use `--slides` to feed your own JSON — your data, your structure, your domain expertise
+- Use `--remix` to feed your existing deck — your data, your structure, Claude sharpens the language and layout
 - The tool generates the frame; your team fills the substance
 - Claude was trained on a broad corpus of business writing, frameworks, and case studies — it starts with context, not a blank page
 
@@ -100,8 +100,8 @@ Point `--slides` at any JSON file from any source. Swap the model in one line of
 > This is the same relationship — without the invoice."
 
 **Speaker note:**
-Demo the `--slides` flag if time allows. Show a JSON file with pre-populated data going in,
-a fully formatted deck coming out. The tool becomes infrastructure, not a black box.
+Demo the `--remix` flag if time allows. Show an existing `.pptx` going in,
+a fully reformatted, polished deck coming out. The tool becomes infrastructure, not a black box.
 
 ---
 

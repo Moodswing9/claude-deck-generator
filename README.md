@@ -25,6 +25,9 @@ python generate.py "Your Topic"
 | `--theme` | `dark` | Color theme: `dark`, `light`, `corporate`, `executive` |
 | `--format` | `pptx` | Output format: `pptx` or `html` |
 | `--output` | auto | Output file path |
+| `--slides N` | `12` | Number of slides to generate (4–20) |
+| `--remix FILE` | — | Remix an existing `.pptx` — MarkItDown extracts the content, Claude rebuilds it |
+| `--no-notes` | off | Omit speaker notes from the output |
 | `--images` | off | Embed Unsplash photos (requires `UNSPLASH_ACCESS_KEY`) |
 | `--list-themes` | — | List available themes and exit |
 
@@ -39,6 +42,15 @@ python generate.py "Q4 Business Review" --format html --theme corporate
 
 # Light theme pptx with custom filename
 python generate.py "Machine Learning" --theme light --output ml.pptx
+
+# Control slide count
+python generate.py "Q4 Business Review" --slides 8
+
+# Remix an existing deck
+python generate.py "Q4 Business Review" --remix old_deck.pptx
+
+# No speaker notes
+python generate.py "Product Roadmap" --no-notes
 ```
 
 ## Themes
@@ -59,7 +71,7 @@ python generate.py "Machine Learning" --theme light --output ml.pptx
 
 ## Complete Presentation Suite
 
-The [v3.0.0 release](https://github.com/Moodswing9/Headbanger-s-Little-Repository/releases/tag/v3.0.0) ships a full boardroom playbook alongside the tool.
+The [v4.0.0 release](https://github.com/Moodswing9/Headbanger-s-Little-Repository/releases/tag/v4.0.0) ships a full boardroom playbook alongside the tool.
 
 ### Decks
 

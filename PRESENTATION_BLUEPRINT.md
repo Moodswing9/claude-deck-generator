@@ -157,7 +157,7 @@ That number doesn't appear on your P&L. It should.
 
 **Content:**
 - Add a theme in 10 lines of Python — your brand, your colors, available via `--theme`
-- Point `--slides` at any JSON file — your data, your structure, the tool handles layout and notes
+- Use `--remix` to feed an existing `.pptx` — MarkItDown extracts the content, Claude rebuilds it as a polished deck
 - Wrap it in a web form: one field, one button, your whole team has access
 - Schedule it: weekly status deck generated and emailed every Monday, zero human intervention
 

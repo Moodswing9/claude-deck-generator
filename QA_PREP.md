@@ -80,7 +80,7 @@ The better question is: how long does it take you to get from zero to something 
 
 One: use the tool for the sections that are structure-heavy and low-judgment — the agenda slide, the context-setting section, the appendix. You build the sections that require your specific domain knowledge.
 
-Two: use the `--slides` flag to feed your own JSON structure. Your data, your sections, your hierarchy — the tool handles layout, formatting, and speaker notes. You're the architect; it's the builder.
+Two: use the `--remix` flag to feed your existing deck. Your content, your sections, your hierarchy — MarkItDown extracts it, Claude rebuilds it polished. You're the architect; it's the builder.
 
 No tool should replace judgment on a 40-slide stakeholder deck. This one doesn't try to. It handles the parts of that deck that shouldn't require judgment in the first place."
 

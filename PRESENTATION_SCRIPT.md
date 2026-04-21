@@ -307,7 +307,7 @@
 
 **Bullets:**
 - Add a theme in 10 lines of Python — immediately available via --theme
-- Point --slides at any JSON file — your data, your structure, your content
+- Use --remix to feed an existing deck — MarkItDown extracts it, Claude rebuilds it polished
 - Pipe it into a GitHub Action and generate decks on every commit
 
 ---
