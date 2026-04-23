@@ -271,6 +271,132 @@ SLIDE_SCHEMA = {
 }
 
 
+def _nvidia_client():
+    """Return an OpenAI-compatible client pointed at NVIDIA NIM."""
+    try:
+        from openai import OpenAI as _OpenAI
+    except ImportError:
+        raise ImportError("openai>=1.0 is required for NVIDIA provider. Install it: pip install openai>=1.0")
+    return _OpenAI(
+        base_url="https://integrate.api.nvidia.com/v1",
+        api_key=os.environ["NVIDIA_API_KEY"],
+    )
+
+
+def analyze_slide_image(image_path: str) -> str:
+    """Use Phi-4 Multimodal to describe a slide image and extract content."""
+    import base64
+    client = _nvidia_client()
+    with open(image_path, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode()
+    ext = pathlib.Path(image_path).suffix.lstrip(".").lower()
+    mime = "image/png" if ext == "png" else "image/jpeg"
+    resp = client.chat.completions.create(
+        model="microsoft/phi-4-multimodal-instruct",
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
+                {"type": "text", "text": (
+                    "Describe this presentation slide in detail. "
+                    "Extract the title, all visible text, and any data or statistics shown."
+                )},
+            ],
+        }],
+        max_tokens=512,
+    )
+    return resp.choices[0].message.content or ""
+
+
+def extract_chart_data(image_path: str) -> str:
+    """Use DePlot to extract data table from a chart image."""
+    import base64
+    client = _nvidia_client()
+    with open(image_path, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode()
+    ext = pathlib.Path(image_path).suffix.lstrip(".").lower()
+    mime = "image/png" if ext == "png" else "image/jpeg"
+    resp = client.chat.completions.create(
+        model="google/deplot",
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
+                {"type": "text", "text": "Generate underlying data table of the figure below:"},
+            ],
+        }],
+        max_tokens=512,
+    )
+    return resp.choices[0].message.content or ""
+
+
+def generate_content_nvidia(
+    topic: str,
+    *,
+    reference_markdown: str = "",
+    slide_count: int = SLIDES_DEFAULT,
+) -> dict:
+    """Generate slide content using Writer Palmyra-Creative-122B via NVIDIA NIM.
+
+    Returns the same dict structure as generate_content() so downstream
+    build_pptx() / build_html() work unchanged.
+    """
+    _check_rate_limit()
+    slide_count = max(SLIDES_MIN, min(SLIDES_MAX, slide_count))
+    client = _nvidia_client()
+
+    if reference_markdown:
+        print(f"[NVIDIA] Remixing deck into {slide_count} slides about: {topic}")
+        user_message = (
+            f"Here is an existing presentation for reference:\n\n"
+            f"<reference_deck>\n{reference_markdown}\n</reference_deck>\n\n"
+            f"Using the above as source material, create an improved, professional "
+            f"{slide_count}-slide presentation about: {topic}\n\n"
+            "Preserve strong points, sharpen language, improve narrative structure. "
+            "Structure: opening hook, agenda, 2-3 major sections, closing."
+        )
+    else:
+        print(f"[NVIDIA] Generating {slide_count}-slide presentation about: {topic}")
+        user_message = (
+            f"Create a professional {slide_count}-slide presentation about: {topic}\n\n"
+            "Structure: opening hook (stat or quote), agenda, 2-3 major sections each "
+            "preceded by a section slide, supporting content slides, and a strong closing."
+        )
+
+    system_prompt = (
+        "You are a McKinsey-level presentation strategist. Create executive-quality "
+        "slide decks with clear narrative flow, precise language, and varied layouts.\n\n"
+        "Return ONLY a valid JSON object matching this exact schema — no markdown fences, no prose:\n"
+        '{"title": "...", "subtitle": "...", "slides": [{"type": "content|section|quote|stat", '
+        '"title": "...", "bullets": [], "notes": "...", '
+        '"quote": "...", "attribution": "...", "stat": "...", "stat_label": "..."}]}\n\n'
+        "Slide type rules:\n"
+        "- 'content': 3-5 bullet points each under 12 words\n"
+        "- 'section': transition slide, bullets=[]\n"
+        "- 'quote': set bullets=[], fill quote and attribution\n"
+        "- 'stat': set bullets=[], fill stat and stat_label\n"
+        "Every 2-3 content slides, insert a section/quote/stat for visual rhythm."
+    )
+
+    resp = client.chat.completions.create(
+        model="writer/palmyra-creative-122b",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message},
+        ],
+        temperature=0.7,
+        max_tokens=4096,
+    )
+    raw = resp.choices[0].message.content or "{}"
+    # Strip markdown fences if the model wraps anyway
+    raw = raw.strip()
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+    return json.loads(raw)
+
+
 def generate_content(
     topic: str,
     *,
@@ -710,6 +836,8 @@ def main():
                         help=f"Target slide count ({SLIDES_MIN}–{SLIDES_MAX}, default: {SLIDES_DEFAULT})")
     parser.add_argument("--no-notes", action="store_true",
                         help="Omit speaker notes from the output")
+    parser.add_argument("--provider", choices=["anthropic", "nvidia"], default="anthropic",
+                        help="AI provider for content generation (default: anthropic)")
     args = parser.parse_args()
 
     if args.list_themes:
@@ -737,11 +865,21 @@ def main():
             sys.exit(1)
 
     theme = THEMES[args.theme]
-    data = generate_content(
-        topic,
-        reference_markdown=reference_markdown,
-        slide_count=args.slides,
-    )
+    if args.provider == "nvidia":
+        if not os.environ.get("NVIDIA_API_KEY"):
+            print("Error: NVIDIA_API_KEY environment variable is required for --provider nvidia")
+            sys.exit(1)
+        data = generate_content_nvidia(
+            topic,
+            reference_markdown=reference_markdown,
+            slide_count=args.slides,
+        )
+    else:
+        data = generate_content(
+            topic,
+            reference_markdown=reference_markdown,
+            slide_count=args.slides,
+        )
 
     images = {}
     if args.images:
@@ -765,7 +903,8 @@ def main():
 
     notes_note = " (no speaker notes)" if not include_notes else ""
     remix_note = f" [remixed from {args.remix}]" if args.remix else ""
-    print(f"Saved: {output}  ({len(data['slides'])} slides, {args.theme} theme{notes_note}{remix_note})")
+    provider_note = f" via {args.provider}"
+    print(f"Saved: {output}  ({len(data['slides'])} slides, {args.theme} theme{notes_note}{remix_note}{provider_note})")
 
 
 if __name__ == "__main__":
