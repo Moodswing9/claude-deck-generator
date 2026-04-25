@@ -4,7 +4,7 @@
 
 **Generate professional presentations from any topic using Claude AI — in seconds**
 
-[![Version](https://img.shields.io/badge/version-4.0.0-6366f1?style=flat-square)](https://github.com/Moodswing9/Headbanger-s-Little-Repository/releases)
+[![Version](https://img.shields.io/badge/version-4.1.0-6366f1?style=flat-square)](https://github.com/Moodswing9/claude-deck-generator/releases)
 [![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-ef4444?style=flat-square)](#license)
 [![Powered by Claude](https://img.shields.io/badge/powered%20by-Claude%20AI-f59e0b?style=flat-square)](#)
 [![Output](https://img.shields.io/badge/output-PPTX%20%7C%20HTML-22c55e?style=flat-square)](#usage)
@@ -94,7 +94,7 @@ python generate.py "Product Roadmap" --no-notes
 
 ## Complete Presentation Suite
 
-The [v4.0.0 release](https://github.com/Moodswing9/Headbanger-s-Little-Repository/releases/tag/v4.0.0) ships a full boardroom playbook alongside the generator.
+The [v4.0.0 release](https://github.com/Moodswing9/claude-deck-generator/releases/tag/v4.0.0) ships a full boardroom playbook alongside the generator.
 
 ### 📊 Decks
 
@@ -131,6 +131,6 @@ No part of this software may be reproduced, distributed, or modified in any form
 
 <div align="center">
 
-Built by [Moodswing9](https://github.com/Moodswing9) · [Portfolio](https://moodswing9.github.io/Index/)
+Built by [Moodswing9](https://github.com/Moodswing9) · [Portfolio](https://moodswing9.github.io)
 
 </div>
