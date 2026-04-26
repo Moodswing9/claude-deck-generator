@@ -330,6 +330,85 @@ def extract_chart_data(image_path: str) -> str:
     return resp.choices[0].message.content or ""
 
 
+def _extract_pptx_images(source: str, work_dir: pathlib.Path) -> list[dict]:
+    """Extract embedded images from a .pptx into work_dir. Returns metadata list."""
+    from pptx import Presentation
+    from pptx.enum.shapes import MSO_SHAPE_TYPE
+
+    prs = Presentation(source)
+    images: list[dict] = []
+    for slide_idx, slide in enumerate(prs.slides, start=1):
+        for shape in slide.shapes:
+            if shape.shape_type != MSO_SHAPE_TYPE.PICTURE:
+                continue
+            blob = shape.image.blob
+            ext = shape.image.ext.lstrip(".")
+            fname = f"slide{slide_idx:02d}_{len(images):02d}.{ext}"
+            fpath = work_dir / fname
+            fpath.write_bytes(blob)
+            images.append({"slide": slide_idx, "path": str(fpath)})
+    return images
+
+
+def _looks_like_data_table(text: str) -> bool:
+    """Heuristic — DePlot output is a chart only if it contains pipes and digits."""
+    return bool(text) and "|" in text and any(c.isdigit() for c in text)
+
+
+def enrich_with_vision(reference_markdown: str, source: str) -> str:
+    """Enrich --remix markdown with Phi-4 (image content) + DePlot (chart data).
+
+    Extracts every embedded image from the source .pptx, runs each through
+    Phi-4 multimodal for descriptive content and DePlot for chart-table
+    extraction (kept only if output looks tabular), and appends the findings
+    as new Markdown sections after the MarkItDown text. Requires NVIDIA_API_KEY.
+    """
+    if not os.environ.get("NVIDIA_API_KEY"):
+        print("[vision] NVIDIA_API_KEY not set — skipping vision enrichment.")
+        return reference_markdown
+
+    import tempfile
+
+    with tempfile.TemporaryDirectory(prefix="deck_vision_") as tmp:
+        work = pathlib.Path(tmp)
+        try:
+            images = _extract_pptx_images(source, work)
+        except Exception as e:
+            print(f"[vision] Image extraction failed ({e}) — skipping enrichment.")
+            return reference_markdown
+
+        if not images:
+            print("[vision] No embedded images found in source deck.")
+            return reference_markdown
+
+        print(f"[vision] Analysing {len(images)} embedded image(s) with Phi-4 + DePlot...")
+        sections = ["", "---", "## Vision-extracted content (from embedded images)"]
+
+        for idx, img in enumerate(images, start=1):
+            print(f"  [{idx}/{len(images)}] slide {img['slide']}: {pathlib.Path(img['path']).name}")
+            section = [f"\n### Image {idx} (slide {img['slide']})"]
+
+            try:
+                description = analyze_slide_image(img["path"]).strip()
+                if description:
+                    section.append(f"**Phi-4 visual content:**\n\n{description}")
+            except Exception as e:
+                section.append(f"_Phi-4 analysis failed: {e}_")
+
+            try:
+                table = extract_chart_data(img["path"]).strip()
+                if _looks_like_data_table(table):
+                    section.append(f"**DePlot data table:**\n\n```\n{table}\n```")
+            except Exception as e:
+                section.append(f"_DePlot extraction failed: {e}_")
+
+            sections.append("\n".join(section))
+
+        enrichment = "\n\n".join(sections)
+
+    return reference_markdown + enrichment
+
+
 def generate_content_nvidia(
     topic: str,
     *,
@@ -831,7 +910,9 @@ def main():
     parser.add_argument("--images", action="store_true",
                         help="Embed Unsplash photos (requires UNSPLASH_ACCESS_KEY)")
     parser.add_argument("--remix", metavar="FILE", default=None,
-                        help="Path to an existing .pptx — MarkItDown extracts it, Claude rebuilds it")
+                        help="Path to an existing .pptx — MarkItDown extracts text; add --vision for image+chart analysis")
+    parser.add_argument("--vision", action="store_true",
+                        help="With --remix: run Phi-4 (image description) and DePlot (chart→table) on every embedded image. Requires NVIDIA_API_KEY.")
     parser.add_argument("--slides", type=int, default=SLIDES_DEFAULT, metavar="N",
                         help=f"Target slide count ({SLIDES_MIN}–{SLIDES_MAX}, default: {SLIDES_DEFAULT})")
     parser.add_argument("--no-notes", action="store_true",
@@ -863,6 +944,10 @@ def main():
         except (FileNotFoundError, ImportError) as e:
             print(f"Error: {e}")
             sys.exit(1)
+        if args.vision:
+            reference_markdown = enrich_with_vision(reference_markdown, args.remix)
+    elif args.vision:
+        print("Warning: --vision has no effect without --remix.")
 
     theme = THEMES[args.theme]
     if args.provider == "nvidia":
