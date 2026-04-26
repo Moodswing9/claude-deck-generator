@@ -4,7 +4,7 @@
 
 **Generate professional presentations from any topic using Claude AI — in seconds**
 
-[![Version](https://img.shields.io/badge/version-4.1.0-6366f1?style=flat-square)](https://github.com/Moodswing9/claude-deck-generator/releases)
+[![Version](https://img.shields.io/badge/version-4.2.0-6366f1?style=flat-square)](https://github.com/Moodswing9/claude-deck-generator/releases)
 [![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-ef4444?style=flat-square)](#license)
 [![Powered by Claude](https://img.shields.io/badge/powered%20by-Claude%20AI-f59e0b?style=flat-square)](#)
 [![Output](https://img.shields.io/badge/output-PPTX%20%7C%20HTML-22c55e?style=flat-square)](#usage)
@@ -61,6 +61,7 @@ python generate.py "Your Topic"
 | `--slides N` | `12` | Number of slides to generate (4 – 20) |
 | `--provider` | `anthropic` | Content provider: `anthropic` (Claude) or `nvidia` (Palmyra-Creative-122B via NIM) |
 | `--remix FILE` | — | Remix an existing `.pptx` — provider rebuilds it with new structure |
+| `--vision` | off | With `--remix`: run Phi-4 + DePlot on every embedded image (requires `NVIDIA_API_KEY`) |
 | `--no-notes` | off | Omit speaker notes from the output |
 | `--images` | off | Embed Unsplash photos (requires `UNSPLASH_ACCESS_KEY`) |
 | `--list-themes` | — | List available themes and exit |
@@ -80,8 +81,11 @@ python generate.py "Machine Learning" --theme light --output ml.pptx
 # Control slide count
 python generate.py "Q4 Business Review" --slides 8
 
-# Remix an existing deck
+# Remix an existing deck (text only)
 python generate.py "Q4 Business Review" --remix old_deck.pptx
+
+# Remix WITH vision — Phi-4 describes images, DePlot extracts charts
+python generate.py "Q4 Business Review" --remix old_deck.pptx --vision
 
 # No speaker notes
 python generate.py "Product Roadmap" --no-notes
@@ -124,7 +128,22 @@ python generate.py "Q4 Business Review"
 python generate.py "Q4 Business Review" --provider nvidia
 ```
 
-> The repo also ships experimental utilities for `microsoft/phi-4-multimodal-instruct` (slide image analysis) and `google/deplot` (chart-to-table extraction). These are defined in `generate.py` but not yet wired into the default CLI flow — call them directly if you want to extract data from existing decks.
+### Vision-enriched remix (`--vision`)
+
+When you remix an existing deck with `--remix old.pptx --vision`, the pipeline does **three** passes over the source:
+
+1. **MarkItDown** extracts all text content (titles, bullets, speaker notes) → Markdown
+2. **`microsoft/phi-4-multimodal-instruct`** runs on every embedded image to produce a written description of what's on the slide visually (logos, diagrams, screenshots, photos)
+3. **`google/deplot`** runs on every embedded image to extract a data table, kept only if the output looks tabular (contains pipes + digits — non-charts produce noise that gets filtered out)
+
+All three passes are concatenated into the reference markdown and handed to your chosen content provider (Claude or Palmyra), which rebuilds the deck with both textual and visual context preserved.
+
+```bash
+export NVIDIA_API_KEY=nvapi-...
+python generate.py "Q4 Strategy Review" --remix old_deck.pptx --vision
+```
+
+Vision adds 1-3 seconds per image (two NIM calls per image), so a 20-image deck takes ~30-60 seconds longer than text-only remix. If your source deck is mostly text, skip `--vision` to save the round-trips.
 
 ---
 
