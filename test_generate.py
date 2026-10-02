@@ -340,7 +340,7 @@ class TestGenerateContent(unittest.TestCase):
 
         generate_content("Some Topic")
         call_kwargs = mock_client.messages.create.call_args[1]
-        self.assertEqual(call_kwargs["model"], "claude-opus-4-6")
+        self.assertEqual(call_kwargs["model"], "claude-opus-4-7")
 
     @patch("generate.anthropic.Anthropic")
     def test_thinking_enabled(self, mock_anthropic_cls):
