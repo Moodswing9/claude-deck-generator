@@ -37,12 +37,12 @@ From a terminal:
 
 ```bash
 claude plugin marketplace add Moodswing9/claude-plugins
-claude plugin install claude-deck-generator@moodswing9
+claude plugin install deck-generator@moodswing9
 ```
 
 This installs `/deck`, `/deck-remix` and the skill.
 
-Or inside Claude Code: `/plugin marketplace add Moodswing9/claude-plugins`, then `/plugin install claude-deck-generator@moodswing9`.
+Or inside Claude Code: `/plugin marketplace add Moodswing9/claude-plugins`, then `/plugin install deck-generator@moodswing9`.
 
 Only need the knowledge skill, without the slash commands? `npx skills add Moodswing9/claude-deck-generator -g` installs just the skill.
 

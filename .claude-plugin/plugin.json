@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
-  "name": "claude-deck-generator",
+  "name": "deck-generator",
   "version": "4.6.1",
   "description": "AI presentation generator — /deck and /deck-remix slash commands for Claude Opus 4.7 (adaptive thinking), Haiku draft mode (outline preview then upscale), or NVIDIA Palmyra. Remix decks with Phi-4 + DePlot vision pass (parallel). 4 themes, .pptx and .html output.",
   "author": {

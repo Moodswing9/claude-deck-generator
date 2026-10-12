@@ -3,7 +3,10 @@
 ## [4.6.1] — 2026-10-12
 ### Fixed
 - Claude Code plugin manifest passes `claude plugin validate`: `repository` is a URL, `license` is MIT and the unsupported `components` field is gone
-- Install docs: the plugin is now installed from the Moodswing9 marketplace (`claude plugin marketplace add Moodswing9/claude-plugins`, then `claude plugin install claude-deck-generator@moodswing9`). The previously documented `npx skills add` installs only the skill, not the slash commands
+- Install docs: the plugin is now installed from the Moodswing9 marketplace (`claude plugin marketplace add Moodswing9/claude-plugins`, then `claude plugin install deck-generator@moodswing9`). The previously documented `npx skills add` installs only the skill, not the slash commands
+
+### Changed
+- Plugin renamed to `deck-generator`: Claude Code reserves plugin names starting with `claude-` for Anthropic. The repository name and the `/deck` and `/deck-remix` commands are unchanged
 
 ### Added
 - CI validates the plugin manifest on every push and pull request
