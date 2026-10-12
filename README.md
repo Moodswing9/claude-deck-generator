@@ -4,7 +4,7 @@
 
 **Generate professional presentations from any topic using Claude AI — in seconds**
 
-[![Version](https://img.shields.io/badge/version-4.6.0-6366f1?style=flat-square)](https://github.com/Moodswing9/claude-deck-generator/releases)
+[![Version](https://img.shields.io/badge/version-4.6.1-6366f1?style=flat-square)](https://github.com/Moodswing9/claude-deck-generator/releases)
 [![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/Moodswing9/claude-deck-generator/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/Moodswing9/claude-deck-generator/actions/workflows/ci.yml)
 [![Powered by Claude](https://img.shields.io/badge/powered%20by-Claude%20Opus%204.7-f59e0b?style=flat-square)](#)
@@ -33,11 +33,18 @@ Provide a topic, choose a theme, and get a polished `.pptx` or `.html` presentat
 
 Install as a Claude Code plugin to get `/deck` and `/deck-remix` slash commands directly in your terminal:
 
+From a terminal:
+
 ```bash
-npx skills add Moodswing9/claude-deck-generator -g
+claude plugin marketplace add Moodswing9/claude-plugins
+claude plugin install deck-generator@moodswing9
 ```
 
-This registers the skill and commands globally so you can run `/deck "Your Topic"` from any Claude Code session.
+This installs `/deck`, `/deck-remix` and the skill.
+
+Or inside Claude Code: `/plugin marketplace add Moodswing9/claude-plugins`, then `/plugin install deck-generator@moodswing9`.
+
+Only need the knowledge skill, without the slash commands? `npx skills add Moodswing9/claude-deck-generator -g` installs just the skill.
 
 | Command | What it does |
 |:---|:---|

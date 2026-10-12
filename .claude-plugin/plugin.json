@@ -1,17 +1,15 @@
 {
-  "name": "claude-deck-generator",
-  "version": "4.6.0",
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "deck-generator",
+  "version": "4.6.1",
   "description": "AI presentation generator — /deck and /deck-remix slash commands for Claude Opus 4.7 (adaptive thinking), Haiku draft mode (outline preview then upscale), or NVIDIA Palmyra. Remix decks with Phi-4 + DePlot vision pass (parallel). 4 themes, .pptx and .html output.",
   "author": {
     "name": "Moodswing9",
     "url": "https://github.com/Moodswing9"
   },
   "homepage": "https://github.com/Moodswing9/claude-deck-generator",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Moodswing9/claude-deck-generator.git"
-  },
-  "license": "SEE LICENSE IN LICENSE",
+  "repository": "https://github.com/Moodswing9/claude-deck-generator",
+  "license": "MIT",
   "keywords": [
     "presentation",
     "powerpoint",
@@ -22,9 +20,5 @@
     "nvidia-nim",
     "phi-4",
     "claude-skill"
-  ],
-  "components": {
-    "skills": ["./skills/claude-deck-generator"],
-    "commands": ["./commands"]
-  }
+  ]
 }
