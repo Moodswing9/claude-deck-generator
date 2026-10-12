@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.6.1] — 2026-10-12
+### Fixed
+- Claude Code plugin manifest passes `claude plugin validate`: `repository` is a URL, `license` is MIT and the unsupported `components` field is gone
+- Install docs: the plugin is now installed from the Moodswing9 marketplace (`claude plugin marketplace add Moodswing9/claude-plugins`, then `claude plugin install claude-deck-generator@moodswing9`). The previously documented `npx skills add` installs only the skill, not the slash commands
+
+### Added
+- CI validates the plugin manifest on every push and pull request
+
 ## [4.6.0] — 2026-06-18
 ### Changed
 - SKILL.md documents Claude Opus 4.7 as the primary model, with a provider comparison (Opus 4.7, Haiku 4.5, NVIDIA Palmyra)
