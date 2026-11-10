@@ -532,10 +532,14 @@ def generate_content(
             "preceded by a section slide, supporting content slides, and a strong closing."
         )
 
-    response = client.messages.create(
-        model="claude-opus-4-7",
-        max_tokens=6000,
+    # Opus 5.5 at high effort, as before on Opus 4.7. Thinking and the deck share
+    # max_tokens. On a refusal the API retries on a fallback model.
+    response = client.beta.messages.create(
+        model="claude-opus-5-5",
+        max_tokens=16000,
         thinking={"type": "adaptive"},
+        betas=["server-side-fallback-2026-07-01"],
+        fallbacks="default",
         system=(
             "You are a McKinsey-level presentation strategist. Create executive-quality "
             "slide decks with clear narrative flow, precise language, and varied layouts.\n\n"
@@ -556,7 +560,8 @@ def generate_content(
             "format": {"type": "json_schema", "schema": SLIDE_SCHEMA},
         },
     )
-    text = next(b.text for b in response.content if b.type == "text")
+    _raise_on_refusal(response)
+    text = "".join(b.text for b in response.content if b.type == "text")
     try:
         data = json.loads(text)
     except json.JSONDecodeError as e:
@@ -572,6 +577,17 @@ def generate_content(
     return data
 
 
+def _raise_on_refusal(response) -> None:
+    """Claude (and any fallback model) declined: say so instead of failing on JSON."""
+    if getattr(response, "stop_reason", None) == "refusal":
+        details = getattr(response, "stop_details", None)
+        category = getattr(details, "category", None) or "unspecified"
+        raise ValueError(
+            f"Claude declined to write this deck (category: {category}). "
+            "Rephrase the topic and try again."
+        )
+
+
 def generate_content_haiku(
     topic: str,
     *,
@@ -579,9 +595,9 @@ def generate_content_haiku(
     slide_count: int = SLIDES_DEFAULT,
     _return_usage: bool = False,
 ) -> dict:
-    """Generate slide content using Claude Haiku 4.5 — fast, low-cost draft mode.
+    """Generate slide content using Claude Haiku 5.5 — fast, low-cost draft mode.
 
-    Uses claude-haiku-4-5-20251001 without adaptive thinking. Returns the same
+    Uses claude-haiku-5-5 with thinking off. Returns the same
     dict structure as generate_content() so downstream builders work unchanged.
     Suitable for quick iterations; use --provider anthropic (Opus) for final output.
     """
@@ -609,9 +625,13 @@ def generate_content_haiku(
             "preceded by a section slide, supporting content slides, and a strong closing."
         )
 
+    # Haiku 5.5 thinks by default; draft mode never did, so thinking stays off
+    # (allowed at effort high or below). Measured on a 12-slide deck: 7.5x cheaper
+    # and ~1.8x faster than Haiku 4.5; medium effort kept the requested slide count.
     response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+        model="claude-haiku-5-5",
         max_tokens=4000,
+        thinking={"type": "disabled"},
         system=(
             "You are a presentation strategist. Create professional slide decks with "
             "clear narrative flow, precise language, and varied layouts.\n\n"
@@ -625,10 +645,12 @@ def generate_content_haiku(
         ),
         messages=[{"role": "user", "content": user_message}],
         output_config={
-            "format": {"type": "json_schema", "schema": SLIDE_SCHEMA}
+            "effort": "medium",
+            "format": {"type": "json_schema", "schema": SLIDE_SCHEMA},
         },
     )
-    text = next(b.text for b in response.content if b.type == "text")
+    _raise_on_refusal(response)
+    text = "".join(b.text for b in response.content if b.type == "text")
     try:
         data = json.loads(text)
     except json.JSONDecodeError as e:
@@ -1022,9 +1044,9 @@ def main():
     parser.add_argument("--no-notes", action="store_true",
                         help="Omit speaker notes from the output")
     parser.add_argument("--provider", choices=["anthropic", "claude-haiku", "nvidia"], default="anthropic",
-                        help="AI provider for content generation: anthropic (Opus 4.7, default), claude-haiku (Haiku 4.5, fast draft), nvidia (Palmyra via NIM)")
+                        help="AI provider for content generation: anthropic (Opus 5.5, default), claude-haiku (Haiku 5.5, fast draft), nvidia (Palmyra via NIM)")
     parser.add_argument("--draft", action="store_true",
-                        help="Two-phase mode: generate Haiku outline first (~20s, ~$0.02), confirm structure, then upscale to Opus 4.7")
+                        help="Two-phase mode: generate Haiku outline first (~20s, ~$0.02), confirm structure, then upscale to Opus 5.5")
     args = parser.parse_args()
 
     if args.list_themes:
@@ -1058,7 +1080,7 @@ def main():
     theme = THEMES[args.theme]
     if args.draft:
         # ── Phase 1: Haiku outline ────────────────────────────────────────────
-        print("[Draft] Generating outline with Claude Haiku 4.5…")
+        print("[Draft] Generating outline with Claude Haiku 5.5…")
         draft_data, usage = generate_content_haiku(
             topic,
             reference_markdown=reference_markdown,
@@ -1066,8 +1088,8 @@ def main():
             _return_usage=True,
         )
 
-        # Cost estimate (Haiku 4.5 pricing)
-        haiku_cost = (usage.input_tokens / 1_000 * 0.0008) + (usage.output_tokens / 1_000 * 0.004)
+        # Cost estimate (Haiku 5.5: $0.10 in / $0.50 out per million tokens)
+        haiku_cost = (usage.input_tokens * 0.10 + usage.output_tokens * 0.50) / 1_000_000
 
         # Print outline
         sep = "─" * 62
@@ -1085,23 +1107,23 @@ def main():
                 print(f"           • {b}")
         print(sep)
         print(
-            f"\n[Haiku 4.5]  {usage.input_tokens:,} in + {usage.output_tokens:,} out "
+            f"\n[Haiku 5.5]  {usage.input_tokens:,} in + {usage.output_tokens:,} out "
             f"tokens | ~${haiku_cost:.3f}"
         )
-        opus_est = "~$0.20–0.50"
-        print(f"[Opus 4.7]   ~30–90 s to generate | estimated cost: {opus_est}\n")
+        opus_est = "~$0.05–0.15"  # measured: 12 slides, $0.065 at high effort
+        print(f"[Opus 5.5]   ~30–90 s to generate | estimated cost: {opus_est}\n")
 
         # ── Phase 2: confirm and upscale ─────────────────────────────────────
         try:
             input(
-                "Happy with the structure? Press Enter to upscale to Claude Opus 4.7, "
+                "Happy with the structure? Press Enter to upscale to Claude Opus 5.5, "
                 "or Ctrl+C to exit without generating a file.\n> "
             )
         except KeyboardInterrupt:
             print("\nExiting — no file generated.")
             return
 
-        print("\n[Opus 4.7] Generating full deck…")
+        print("\n[Opus 5.5] Generating full deck…")
         data = generate_content(topic, reference_markdown=reference_markdown, slide_count=args.slides)
 
     elif args.provider == "nvidia":

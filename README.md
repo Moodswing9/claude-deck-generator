@@ -25,7 +25,7 @@
 
 ## Overview
 
-Provide a topic, choose a theme, and get a polished `.pptx` or `.html` presentation — complete with structured slides and speaker notes. Backed by **Claude Opus 4.7** by default, with an alternate provider path through **NVIDIA NIM** (Writer Palmyra-Creative-122B). Supports remixing existing decks, controlling slide count, and embedding Unsplash photos.
+Provide a topic, choose a theme, and get a polished `.pptx` or `.html` presentation — complete with structured slides and speaker notes. Backed by **Claude Opus 5.5** by default, with an alternate provider path through **NVIDIA NIM** (Writer Palmyra-Creative-122B). Supports remixing existing decks, controlling slide count, and embedding Unsplash photos.
 
 ---
 
@@ -139,7 +139,7 @@ python generate.py "Product Roadmap" --no-notes
 
 ## How It Works
 
-1. The selected provider (**Claude Opus 4.7** or **Writer Palmyra-Creative-122B** via NVIDIA NIM) generates structured slide content — titles, bullets, speaker notes
+1. The selected provider (**Claude Opus 5.5** or **Writer Palmyra-Creative-122B** via NVIDIA NIM) generates structured slide content — titles, bullets, speaker notes
 2. Content is rendered into your chosen format and theme
 
 ---
@@ -150,7 +150,7 @@ The CLI supports two interchangeable content providers via `--provider`. Both pr
 
 | Provider | Model | When to use |
 |:---|:---|:---|
-| `anthropic` (default) | `claude-opus-4-7` with adaptive thinking + structured output | Default — best narrative quality, supports adaptive reasoning depth |
+| `anthropic` (default) | `claude-opus-5-5` with adaptive thinking + structured output | Default — best narrative quality, supports adaptive reasoning depth |
 | `nvidia` | `writer/palmyra-creative-122b` via `https://integrate.api.nvidia.com/v1` | Self-hosted NIM endpoints, cost optimization, or when you want to keep the full pipeline on NVIDIA infra |
 
 ```bash

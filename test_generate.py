@@ -326,7 +326,7 @@ class TestGenerateContent(unittest.TestCase):
     def test_returns_parsed_dict(self, mock_anthropic_cls):
         mock_client = MagicMock()
         mock_anthropic_cls.return_value = mock_client
-        mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+        mock_client.beta.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
 
         result = generate_content("Test Topic")
         self.assertEqual(result["title"], "Test Presentation")
@@ -336,30 +336,30 @@ class TestGenerateContent(unittest.TestCase):
     def test_calls_correct_model(self, mock_anthropic_cls):
         mock_client = MagicMock()
         mock_anthropic_cls.return_value = mock_client
-        mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+        mock_client.beta.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
 
         generate_content("Some Topic")
-        call_kwargs = mock_client.messages.create.call_args[1]
-        self.assertEqual(call_kwargs["model"], "claude-opus-4-7")
+        call_kwargs = mock_client.beta.messages.create.call_args[1]
+        self.assertEqual(call_kwargs["model"], "claude-opus-5-5")
 
     @patch("generate.anthropic.Anthropic")
     def test_thinking_enabled(self, mock_anthropic_cls):
         mock_client = MagicMock()
         mock_anthropic_cls.return_value = mock_client
-        mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+        mock_client.beta.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
 
         generate_content("Some Topic")
-        call_kwargs = mock_client.messages.create.call_args[1]
+        call_kwargs = mock_client.beta.messages.create.call_args[1]
         self.assertEqual(call_kwargs["thinking"]["type"], "adaptive")
 
     @patch("generate.anthropic.Anthropic")
     def test_topic_in_prompt(self, mock_anthropic_cls):
         mock_client = MagicMock()
         mock_anthropic_cls.return_value = mock_client
-        mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+        mock_client.beta.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
 
         generate_content("Quantum Computing")
-        call_kwargs = mock_client.messages.create.call_args[1]
+        call_kwargs = mock_client.beta.messages.create.call_args[1]
         user_message = call_kwargs["messages"][0]["content"]
         self.assertIn("Quantum Computing", user_message)
 
@@ -375,10 +375,22 @@ class TestGenerateContent(unittest.TestCase):
         mock_anthropic_cls.return_value = mock_client
         response = MagicMock()
         response.content = [thinking_block, text_block]
-        mock_client.messages.create.return_value = response
+        mock_client.beta.messages.create.return_value = response
 
         result = generate_content("Topic")
         self.assertEqual(result["title"], "Test Presentation")
+
+    @patch("generate.anthropic.Anthropic")
+    def test_opts_into_refusal_fallback(self, mock_anthropic_cls):
+        mock_client = MagicMock()
+        mock_anthropic_cls.return_value = mock_client
+        mock_client.beta.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+
+        generate_content("Some Topic")
+        call_kwargs = mock_client.beta.messages.create.call_args[1]
+        self.assertEqual(call_kwargs["fallbacks"], "default")
+        self.assertIn("server-side-fallback-2026-07-01", call_kwargs["betas"])
+        self.assertEqual(call_kwargs["output_config"]["effort"], "high")
 
 
 # ---------------------------------------------------------------------------
@@ -413,17 +425,32 @@ class TestGenerateContentHaiku(unittest.TestCase):
 
         generate_content_haiku("Some Topic")
         call_kwargs = mock_client.messages.create.call_args[1]
-        self.assertEqual(call_kwargs["model"], "claude-haiku-4-5-20251001")
+        self.assertEqual(call_kwargs["model"], "claude-haiku-5-5")
 
     @patch("generate.anthropic.Anthropic")
-    def test_no_adaptive_thinking(self, mock_anthropic_cls):
+    def test_thinking_off_at_an_allowed_effort(self, mock_anthropic_cls):
         mock_client = MagicMock()
         mock_anthropic_cls.return_value = mock_client
         mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
 
         generate_content_haiku("Some Topic")
         call_kwargs = mock_client.messages.create.call_args[1]
-        self.assertNotIn("thinking", call_kwargs)
+        # Haiku 5.5 thinks by default; disabled thinking is accepted at effort high or below.
+        self.assertEqual(call_kwargs["thinking"], {"type": "disabled"})
+        self.assertIn(call_kwargs["output_config"]["effort"], {"low", "medium", "high"})
+
+    @patch("generate.anthropic.Anthropic")
+    def test_refusal_raises_clear_error(self, mock_anthropic_cls):
+        mock_client = MagicMock()
+        mock_anthropic_cls.return_value = mock_client
+        refused = MagicMock()
+        refused.stop_reason = "refusal"
+        refused.stop_details.category = "frontier_llm"
+        refused.content = []
+        mock_client.messages.create.return_value = refused
+
+        with self.assertRaisesRegex(ValueError, "declined"):
+            generate_content_haiku("Some Topic")
 
     @patch("generate.anthropic.Anthropic")
     def test_slide_count_clamped_to_min(self, mock_anthropic_cls):
@@ -708,10 +735,10 @@ class TestGenerateContentExtended(unittest.TestCase):
     def test_slide_count_in_prompt(self, mock_anthropic_cls):
         mock_client = MagicMock()
         mock_anthropic_cls.return_value = mock_client
-        mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+        mock_client.beta.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
 
         generate_content("Some Topic", slide_count=8)
-        call_kwargs = mock_client.messages.create.call_args[1]
+        call_kwargs = mock_client.beta.messages.create.call_args[1]
         user_message = call_kwargs["messages"][0]["content"]
         self.assertIn("8", user_message)
 
@@ -719,10 +746,10 @@ class TestGenerateContentExtended(unittest.TestCase):
     def test_slide_count_clamped_to_min(self, mock_anthropic_cls):
         mock_client = MagicMock()
         mock_anthropic_cls.return_value = mock_client
-        mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+        mock_client.beta.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
 
         generate_content("Some Topic", slide_count=1)  # below SLIDES_MIN
-        call_kwargs = mock_client.messages.create.call_args[1]
+        call_kwargs = mock_client.beta.messages.create.call_args[1]
         user_message = call_kwargs["messages"][0]["content"]
         self.assertIn(str(SLIDES_MIN), user_message)
 
@@ -730,10 +757,10 @@ class TestGenerateContentExtended(unittest.TestCase):
     def test_slide_count_clamped_to_max(self, mock_anthropic_cls):
         mock_client = MagicMock()
         mock_anthropic_cls.return_value = mock_client
-        mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+        mock_client.beta.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
 
         generate_content("Some Topic", slide_count=999)  # above SLIDES_MAX
-        call_kwargs = mock_client.messages.create.call_args[1]
+        call_kwargs = mock_client.beta.messages.create.call_args[1]
         user_message = call_kwargs["messages"][0]["content"]
         self.assertIn(str(SLIDES_MAX), user_message)
 
@@ -741,10 +768,10 @@ class TestGenerateContentExtended(unittest.TestCase):
     def test_reference_markdown_included_in_prompt(self, mock_anthropic_cls):
         mock_client = MagicMock()
         mock_anthropic_cls.return_value = mock_client
-        mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+        mock_client.beta.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
 
         generate_content("New Topic", reference_markdown="# Old Slide\nSome content")
-        call_kwargs = mock_client.messages.create.call_args[1]
+        call_kwargs = mock_client.beta.messages.create.call_args[1]
         user_message = call_kwargs["messages"][0]["content"]
         self.assertIn("<reference_deck>", user_message)
         self.assertIn("Old Slide", user_message)
@@ -753,10 +780,10 @@ class TestGenerateContentExtended(unittest.TestCase):
     def test_no_reference_deck_tag_when_empty(self, mock_anthropic_cls):
         mock_client = MagicMock()
         mock_anthropic_cls.return_value = mock_client
-        mock_client.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
+        mock_client.beta.messages.create.return_value = self._make_mock_response(SAMPLE_DATA)
 
         generate_content("Topic")
-        call_kwargs = mock_client.messages.create.call_args[1]
+        call_kwargs = mock_client.beta.messages.create.call_args[1]
         user_message = call_kwargs["messages"][0]["content"]
         self.assertNotIn("<reference_deck>", user_message)
 
@@ -870,7 +897,8 @@ class TestGenerateContentErrors(unittest.TestCase):
         mock_cls.return_value = mock_client
         resp = MagicMock()
         resp.content = [MagicMock(type="text", text=text)]
-        mock_client.messages.create.return_value = resp
+        mock_client.messages.create.return_value = resp       # Haiku
+        mock_client.beta.messages.create.return_value = resp  # Opus (refusal fallback is beta)
         return mock_client
 
     @patch("generate.anthropic.Anthropic")
@@ -898,7 +926,7 @@ class TestGenerateContentErrors(unittest.TestCase):
     def test_api_exception_propagates(self, mock_cls):
         mock_client = MagicMock()
         mock_cls.return_value = mock_client
-        mock_client.messages.create.side_effect = TimeoutError("Request timed out")
+        mock_client.beta.messages.create.side_effect = TimeoutError("Request timed out")
         with self.assertRaises(TimeoutError):
             generate_content("Test")
 
