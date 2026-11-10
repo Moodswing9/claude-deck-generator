@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.7.0] — 2026-11-10
+### Changed
+- Default provider moves to **Claude Opus 5.5** (`claude-opus-5-5`), still with adaptive thinking at `high` effort. Measured: a 12-slide deck in 36 s for about $0.065. `max_tokens` 6000 → 16000, since thinking and the deck share it
+- Draft mode (`--provider claude-haiku`, `--draft`) moves to **Claude Haiku 5.5** (`claude-haiku-5-5`) with thinking off and `medium` effort. Measured on a 12-slide deck: 7.5x cheaper ($0.0008 vs $0.0061) and about 1.8x faster than Haiku 4.5, with the requested slide count kept
+- `--draft` cost estimates use Haiku 5.5 prices (the old figure used neither Haiku 4.5's nor Haiku 5.5's prices) and the measured Opus 5.5 cost
+- `anthropic` 0.84.0 → 2.7.0 (API version `2026-10-21`)
+
+### Fixed
+- If Claude declines a topic, generation now says so (`ValueError` with the refusal category) instead of failing with a JSON or `StopIteration` error. Opus requests first retry on a fallback model (`fallbacks: "default"`)
+
 ## [4.6.1] — 2026-10-12
 ### Fixed
 - Claude Code plugin manifest passes `claude plugin validate`: `repository` is a URL, `license` is MIT and the unsupported `components` field is gone
