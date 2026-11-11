@@ -1,6 +1,6 @@
 anthropic==2.7.0
-markitdown[pptx]==0.1.5
+markitdown[pptx]==0.1.7
 python-pptx==1.0.2
-requests==2.33.0
-streamlit==1.55.0
+requests==2.34.2
+streamlit==1.67.0
 openai>=1.0
