@@ -3,4 +3,4 @@ markitdown[pptx]==0.1.7
 python-pptx==1.0.2
 requests==2.34.2
 streamlit==1.67.0
-openai>=1.0
+openai>=3.46.0
