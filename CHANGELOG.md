@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.7.1] — 2026-11-15
+### Security
+- `healthcheck.py` no longer prints any part of your API keys. It showed the first 8 characters of `UNSPLASH_ACCESS_KEY` (and the `ANTHROPIC_API_KEY` prefix); both now just say "set" (CodeQL `py/clear-text-logging-sensitive-data`)
+- CI workflows declare read-only token permissions
+
 ## [4.7.0] — 2026-11-10
 ### Changed
 - Default provider moves to **Claude Opus 5.5** (`claude-opus-5-5`), still with adaptive thinking at `high` effort. Measured: a 12-slide deck in 36 s for about $0.065. `max_tokens` 6000 → 16000, since thinking and the deck share it
