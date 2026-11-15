@@ -56,7 +56,7 @@ def run():
     print("\n-- Environment --")
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if api_key.startswith("sk-ant-"):
-        check("  ANTHROPIC_API_KEY", True, f"{api_key[:12]}...")
+        check("  ANTHROPIC_API_KEY", True, "set")  # never print any part of a secret
     elif api_key:
         check("  ANTHROPIC_API_KEY", False, "set but doesn't look like a valid key")
         failures += 1
@@ -66,7 +66,7 @@ def run():
 
     unsplash_key = os.environ.get("UNSPLASH_ACCESS_KEY", "")
     if unsplash_key:
-        check("  UNSPLASH_ACCESS_KEY", True, f"{unsplash_key[:8]}... (images enabled)")
+        check("  UNSPLASH_ACCESS_KEY", True, "set (images enabled)")
     else:
         check("  UNSPLASH_ACCESS_KEY", True, "not set (optional — images disabled)", warn=False)
 
